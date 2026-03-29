@@ -93,7 +93,7 @@ class EEGToLatentTransformer(nn.Module):
         self.embed = nn.Linear(cfg.eeg_chan * cfg.eeg_time, cfg.d_model)
         encoder_layer = nn.TransformerEncoderLayer(d_model=cfg.d_model, nhead=cfg.num_heads, batch_first=True)
         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=cfg.num_layers)
-        self.latent_proj = nn.Linear(cfg.d_model, 4 * 32 * 32)
+        self.latent_proj = nn.Linear(cfg.d_model,6 * 4 * 32 * 32)
 
     def forward(self, x):
         # x: (B, 7, 62, 100)
