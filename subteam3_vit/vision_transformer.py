@@ -35,7 +35,8 @@ wandb.init(
 BATCH       = 4         # use small batch locally
 EEG_SEGS    = 7         # time segments
 EEG_CHAN    = 62        # EEG channels (SEED-DV)
-EEG_TIME    = 100       # time points per segment
+EEG_TIME_RAW = 104000  # real SEED-DV shape: (7, 62, 104000)
+EEG_TIME     = 100     # after windowing by Sub-team 1
 VIS_FRAMES  = 6         # video frames
 VIS_CHAN    = 4         # VAE latent channels
 VIS_H       = 32        # latent height
