@@ -15,7 +15,7 @@ pipe = pipe.to(device)
 # enable memory optimization (VERY important)
 pipe.enable_attention_slicing()
 
-image = pipe("a dog running in a park").images[0]
+image = pipe("A beautifull girl with a cat in his hands").images[0]
 
 image.save("output.png")
 
