@@ -10,7 +10,7 @@ import wandb
 # PROTOCOL RULE: Limit VRAM when testing
 # Comment this out only for full training runs
 # ─────────────────────────────────────────────
-torch.cuda.set_per_process_memory_fraction(0.2, device=0)
+#torch.cuda.set_per_process_memory_fraction(0.2, device=0)
 
 # ─────────────────────────────────────────────
 # W&B Initialization (exactly as per protocol)
