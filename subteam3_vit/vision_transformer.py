@@ -1,164 +1,136 @@
-# vision_transformer.py
-# Sub-team 3 | EEG2Video CS671
-# Task: Map EEG signals → VAE visual latents
-
 import torch
 import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader
+import numpy as np
 import wandb
+import os
 
 # ─────────────────────────────────────────────
-# PROTOCOL RULE: Limit VRAM when testing
-# Comment this out only for full training runs
+# 1. HYBRID CONFIGURATION
 # ─────────────────────────────────────────────
-#torch.cuda.set_per_process_memory_fraction(0.2, device=0)
+# This path only exists on the DSLAB server
+SERVER_PATH = "/home/teaching/TEAM_22_DATASET/SEED-DV/SEED-DV/EEG/"
+IS_SERVER = os.path.exists(SERVER_PATH)
+
+# Device & Protocol Logic
+if IS_SERVER:
+    device = torch.device("cuda")
+    # PROTOCOL RULE: VRAM fencing for shared server
+    torch.cuda.set_per_process_memory_fraction(0.2, device=0)
+    print("🚀 Running on SERVER (GPU Mode)")
+else:
+    device = torch.device("cpu")
+    print("💻 Running on MAC (Local CPU Mode)")
 
 # ─────────────────────────────────────────────
-# W&B Initialization (exactly as per protocol)
+# 2. W&B INITIALIZATION
 # ─────────────────────────────────────────────
 wandb.init(
     project="eeg2video-cs671",
     group="Sub-team 3: Vision Transformer",
-    name="your_name_run_01",           # change to your name
+    name="manan_test_run",
     config={
         "learning_rate": 0.001,
-        "epochs": 50,
-        "batch_size": 16,
+        "epochs": 5,           # Keep small for local testing
+        "batch_size": 2,       # Small batch to avoid OOM
         "d_model": 256,
         "num_heads": 8,
         "num_layers": 4,
+        "eeg_chan": 62,
+        "eeg_time": 100,       # Points after windowing
+        "vis_frames": 6
     }
 )
 
 # ─────────────────────────────────────────────
-# Interface Contract Shapes (from Phase 1 doc)
+# 3. HYBRID DATA LOADER
 # ─────────────────────────────────────────────
-BATCH       = 4         # use small batch locally
-EEG_SEGS    = 7         # time segments
-EEG_CHAN    = 62        # EEG channels (SEED-DV)
-EEG_TIME_RAW = 104000  # real SEED-DV shape: (7, 62, 104000)
-EEG_TIME     = 100     # after windowing by Sub-team 1
-VIS_FRAMES  = 6         # video frames
-VIS_CHAN    = 4         # VAE latent channels
-VIS_H       = 32        # latent height
-VIS_W       = 32        # latent width
+class SEEDDVDataset(Dataset):
+    def __init__(self, root_dir, target_len=100):
+        self.root_dir = root_dir
+        self.target_len = target_len
+        if IS_SERVER:
+            self.file_list = [f for f in os.listdir(root_dir) if f.endswith('.npy')]
+        else:
+            self.file_list = ["local_test_1", "local_test_2"] # Fake list for Mac
+
+    def __len__(self):
+        return len(self.file_list)
+
+    def __getitem__(self, idx):
+        if IS_SERVER:
+            # REAL DATA LOADING
+            file_path = os.path.join(self.root_dir, self.file_list[idx])
+            data = np.load(file_path, allow_pickle=True)
+            # Slice middle 100 points from 104,000
+            start = (data.shape[-1] // 2) - (self.target_len // 2)
+            sliced_data = data[:, :, start:start + self.target_len]
+            x = torch.from_numpy(sliced_data).float()
+        else:
+            # LOCAL DUMMY DATA
+            # Shape: (Segments, Channels, Time) -> (7, 62, 100)
+            x = torch.randn(7, 62, 100)
+        
+        # Target visual latents (Phase 1 dummy)
+        # Shape: (Frames, Channels, H, W) -> (6, 4, 32, 32)
+        y = torch.randn(6, 4, 32, 32)
+        return x, y
 
 # ─────────────────────────────────────────────
-# Dummy Data (use this until Phase 1 data ready)
-# Shape: (Batch, 7, Channels, 100)
+# 4. MODEL ARCHITECTURE
 # ─────────────────────────────────────────────
-eeg_dummy = torch.randn(BATCH, EEG_SEGS, EEG_CHAN, EEG_TIME)
-target_latents = torch.randn(BATCH, VIS_FRAMES, VIS_CHAN, VIS_H, VIS_W)
-
-print(f"EEG input shape:      {eeg_dummy.shape}")
-print(f"Target latent shape:  {target_latents.shape}")
-
-
-# ─────────────────────────────────────────────
-# Model: EEG → Visual Latent Transformer
-# ─────────────────────────────────────────────
-class EEGPatchEmbedding(nn.Module):
-    """Flatten each EEG segment into a token."""
-    def __init__(self, eeg_chan, eeg_time, d_model):
-        super().__init__()
-        self.proj = nn.Linear(eeg_chan * eeg_time, d_model)
-
-    def forward(self, x):
-        # x: (B, 7, C, T) → (B, 7, d_model)
-        B, S, C, T = x.shape
-        x = x.reshape(B, S, C * T)
-        return self.proj(x)
-
-
 class EEGToLatentTransformer(nn.Module):
-    """
-    Vanilla Transformer: maps EEG tokens → visual latent tokens.
-    Input:  (B, 7, EEG_CHAN, EEG_TIME)
-    Output: (B, 6, VIS_CHAN, VIS_H, VIS_W)
-    """
-    def __init__(self, eeg_chan, eeg_time, d_model=256,
-                 num_heads=8, num_layers=4,
-                 vis_frames=6, vis_chan=4, vis_h=32, vis_w=32):
+    def __init__(self, cfg):
         super().__init__()
-
-        self.embed = EEGPatchEmbedding(eeg_chan, eeg_time, d_model)
-
+        # Flattened EEG input: 62 channels * 100 time points = 6200
+        self.embed = nn.Linear(cfg.eeg_chan * cfg.eeg_time, cfg.d_model)
+        
         encoder_layer = nn.TransformerEncoderLayer(
-            d_model=d_model,
-            nhead=num_heads,
-            dim_feedforward=d_model * 4,
-            dropout=0.1,
-            batch_first=True       # (B, S, D) convention
+            d_model=cfg.d_model, nhead=cfg.num_heads, batch_first=True
         )
-        self.transformer = nn.TransformerEncoder(
-            encoder_layer, num_layers=num_layers
-        )
-
-        # Project each output token to one video frame latent
-        self.vis_frames  = vis_frames
-        self.vis_chan    = vis_chan
-        self.vis_h       = vis_h
-        self.vis_w       = vis_w
-        latent_dim = vis_chan * vis_h * vis_w
-
-        self.frame_proj = nn.Linear(d_model, latent_dim)
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=cfg.num_layers)
+        
+        # Project tokens to Visual Latent space (4*32*32 = 4096)
+        self.latent_proj = nn.Linear(cfg.d_model, 4 * 32 * 32)
 
     def forward(self, x):
-        # x: (B, 7, EEG_CHAN, EEG_TIME)
-        tokens = self.embed(x)                      # (B, 7, d_model)
-        tokens = self.transformer(tokens)            # (B, 7, d_model)
-
-        # Use first 6 tokens → one per video frame
-        frame_tokens = tokens[:, :self.vis_frames]   # (B, 6, d_model)
-        latents = self.frame_proj(frame_tokens)      # (B, 6, C*H*W)
-
-        B = latents.shape[0]
-        latents = latents.reshape(
-            B, self.vis_frames, self.vis_chan, self.vis_h, self.vis_w
-        )
-        return latents
-
+        # x: (B, 7, 62, 100) -> (B, 7, 6200)
+        B, S, C, T = x.shape
+        x = x.view(B, S, -1)
+        
+        tokens = self.embed(x)             # (B, 7, 256)
+        feat = self.transformer(tokens)    # (B, 7, 256)
+        
+        # Predict 6 video frames from the first 6 EEG segments
+        out = self.latent_proj(feat[:, :6, :]) # (B, 6, 4096)
+        return out.view(B, 6, 4, 32, 32)
 
 # ─────────────────────────────────────────────
-# Training Loop
+# 5. TEST RUN EXECUTION
 # ─────────────────────────────────────────────
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
+dataset = SEEDDVDataset(SERVER_PATH if IS_SERVER else "")
+loader = DataLoader(dataset, batch_size=wandb.config.batch_size, shuffle=True)
 
-model = EEGToLatentTransformer(
-    eeg_chan=EEG_CHAN,
-    eeg_time=EEG_TIME,
-    d_model=wandb.config.d_model,
-    num_heads=wandb.config.num_heads,
-    num_layers=wandb.config.num_layers,
-    vis_frames=VIS_FRAMES,
-    vis_chan=VIS_CHAN,
-    vis_h=VIS_H,
-    vis_w=VIS_W,
-).to(device)
-
+model = EEGToLatentTransformer(wandb.config).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=wandb.config.learning_rate)
 criterion = nn.MSELoss()
 
-eeg_dummy     = eeg_dummy.to(device)
-target_latents = target_latents.to(device)
+print(f"✅ Setup complete. Starting {wandb.config.epochs} epochs...")
 
 for epoch in range(wandb.config.epochs):
     model.train()
-    optimizer.zero_grad()
+    for batch_idx, (eeg, target) in enumerate(loader):
+        eeg, target = eeg.to(device), target.to(device)
+        
+        optimizer.zero_grad()
+        output = model(eeg)
+        loss = criterion(output, target)
+        loss.backward()
+        optimizer.step()
+        
+        if batch_idx % 5 == 0:
+            print(f"Epoch {epoch} | Batch {batch_idx} | Loss: {loss.item():.4f}")
+            wandb.log({"loss": loss.item()})
 
-    pred_latents = model(eeg_dummy)             # (B, 6, 4, 32, 32)
-    loss = criterion(pred_latents, target_latents)
-
-    loss.backward()
-    optimizer.step()
-
-    # ── W&B Logging (required by protocol) ──
-    wandb.log({"train_loss": loss.item(), "epoch": epoch})
-
-    if epoch % 10 == 0:
-        print(f"Epoch {epoch:3d} | Loss: {loss.item():.6f}")
-
-# Save weights — locally only, never push to GitHub
-torch.save(model.state_dict(), "vision_transformer.pth")
-print("Model saved to vision_transformer.pth")
+print("🎉 Test run finished successfully!")
 wandb.finish()
