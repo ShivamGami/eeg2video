@@ -1,0 +1,10 @@
+*.npy
+*.pt
+*.pth
+__pycache__/
+*.pyc
+.env
+wandb/
+.DS_Store
+subteam3_vit/checkpoints/*
+!subteam3_vit/checkpoints/.gitkeep
