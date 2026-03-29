@@ -1,0 +1,11 @@
+# Ignore Python cache files
+__pycache__/
+
+# Ignore massive data folders
+processed_raw_clips/
+processed_features/
+
+# Ignore heavy data files
+*.pt
+*.npy
+*.mp4
