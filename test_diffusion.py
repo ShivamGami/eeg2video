@@ -1,48 +1,70 @@
 import torch
 from diffusers import StableDiffusionPipeline
 
-# -------------------------------
-# Device setup
-# -------------------------------
+# -------------------------
+# Device
+# -------------------------
 device = "cuda" if torch.cuda.is_available() else "cpu"
-print("Using device:", device)
+print("Device:", device)
 
-# -------------------------------
-# Load model (optimized for GPU)
-# -------------------------------
+# -------------------------
+# Load model
+# -------------------------
 pipe = StableDiffusionPipeline.from_pretrained(
     "runwayml/stable-diffusion-v1-5",
     torch_dtype=torch.float16
-)
+).to(device)
 
-pipe = pipe.to(device)
+unet = pipe.unet
+vae = pipe.vae
+scheduler = pipe.scheduler
 
-# -------------------------------
-# Optional optimizations (safe)
-# -------------------------------
-pipe.enable_attention_slicing()
+# -------------------------
+# Dummy inputs (IMPORTANT)
+# -------------------------
+B = 1
 
-# If xformers is installed → faster attention
-try:
-    pipe.enable_xformers_memory_efficient_attention()
-except:
-    pass
+latents = torch.randn(B, 4, 64, 64, dtype=torch.float16).to(device)
+text_embeddings = torch.randn(B, 77, 768, dtype=torch.float16).to(device)
 
-# -------------------------------
-# Inference (NO gradients)
-# -------------------------------
-prompt = "A beautiful girl holding a cat in her hands"
+# -------------------------
+# Diffusion setup
+# -------------------------
+scheduler.set_timesteps(20)
 
+# -------------------------
+# Diffusion loop
+# -------------------------
 with torch.no_grad():
-    image = pipe(
-        prompt,
-        num_inference_steps=30,   # good quality
-        guidance_scale=7.5        # standard CFG
-    ).images[0]
+    for t in scheduler.timesteps:
+        t = t.to(device)
 
-# -------------------------------
-# Save output
-# -------------------------------
-image.save("output.png")
+        noise_pred = unet(
+            latents,
+            t,
+            encoder_hidden_states=text_embeddings
+        ).sample
 
-print("Image generated successfully ✅")
+        latents = scheduler.step(
+            noise_pred,
+            t,
+            latents
+        ).prev_sample
+
+# -------------------------
+# Decode image
+# -------------------------
+image = vae.decode(latents / 0.18215).sample
+
+# -------------------------
+# Convert to PIL
+# -------------------------
+image = (image / 2 + 0.5).clamp(0, 1)
+image = image.detach().cpu().permute(0, 2, 3, 1).numpy()[0]
+
+from PIL import Image
+image = Image.fromarray((image * 255).astype("uint8"))
+
+image.save("phase1_output.png")
+
+print("Phase 1 output generated ✅")
