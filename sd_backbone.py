@@ -27,7 +27,11 @@ Server (Phase 2+):
 
 import sys
 import os
+from diffusers import DDPMScheduler
+from diffusers import AutoencoderKL
 
+import torchvision.utils as vutils
+import torch
 # ─────────────────────────────────────────────────────────────────────────────
 #  Environment Safeguard – MUST be eeg2video_env (server & local)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -401,6 +405,7 @@ def compute_loss(
 #  Phase 1 Sanity Check
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def run_phase1_check():
     """CPU-only forward pass check with dummy tensors. No GPU or W&B needed."""
     from dummy_data import get_dummy_batch, get_dummy_noisy_latents
@@ -446,7 +451,47 @@ def run_phase1_check():
     print("  Next: commit to feature/generative-backbone, push to server.")
     print("="*65 + "\n")
 
+def run_inference(model, vae, device):
 
+    scheduler = DDPMScheduler(num_train_timesteps=1000)
+
+    model.eval()
+    vae.eval()
+
+    B, T, C, H, W = 1, 6, 4, 32, 32
+
+    # start from pure noise
+    latents = torch.randn((B, T, C, H, W)).to(device)
+
+    # dummy text embeddings
+    text_embeddings = torch.randn((B, 77, 768)).to(device)
+
+    # 🔥 reverse diffusion
+    for t in reversed(range(1000)):
+        timestep = torch.tensor([t], device=device).long()
+
+        with torch.no_grad():
+            noise_pred = model(latents, timestep, text_embeddings)
+
+        latents = scheduler.step(noise_pred, t, latents).prev_sample
+
+    print("Inference complete ✅")
+
+    # 🔥 decode latents → images
+    latents = latents / 0.18215
+
+    latents = latents.view(B*T, C, H, W)
+
+    with torch.no_grad():
+        images = vae.decode(latents).sample
+
+    # reshape back
+    images = images.view(B, T, 3, 256, 256)
+
+    # normalize to [0,1]
+    images = (images.clamp(-1, 1) + 1) / 2
+
+    return images
 # ─────────────────────────────────────────────────────────────────────────────
 #  Entry Point
 # ─────────────────────────────────────────────────────────────────────────────
@@ -465,61 +510,69 @@ if __name__ == "__main__":
     if args.mode == "phase1_check":
         run_phase1_check()
 
+
+
+# ─────────────────────────────────────────────────────────────
+# TRAIN MODE
+# ─────────────────────────────────────────────────────────────
+
     elif args.mode == "train":
-        # ── Phase 2+ training – SERVER ONLY ──────────────────────────────────
-        from dummy_data import get_dummy_batch, get_dummy_noisy_latents
+
+        from dummy_data import get_dummy_batch
+        import torchvision.utils as vutils
 
         cfg = Config()
 
-        # Enforce 20% VRAM cap (team protocol)
         if args.use_gpu and torch.cuda.is_available():
             torch.cuda.set_per_process_memory_fraction(0.2, device=0)
             device = torch.device("cuda")
-            print(f"  GPU : {torch.cuda.get_device_name(0)}  (20% VRAM cap enforced)")
+            print(f"  GPU : {torch.cuda.get_device_name(0)} (20% VRAM cap)")
         else:
             device = torch.device("cpu")
             print("  Device: CPU")
 
-        # W&B – only import when flag is set to avoid crash if not logged in
-        if args.use_wandb:
-            import wandb
-            wandb.init(
-                project=cfg.PROJECT,
-                group=cfg.GROUP,
-                name=cfg.RUN_NAME,
-                config={
-                    "learning_rate":   cfg.LEARNING_RATE,
-                    "epochs":          cfg.EPOCHS,
-                    "batch_size":      cfg.BATCH_SIZE,
-                    "model_channels":  cfg.MODEL_CHANNELS,
-                    "num_frames":      cfg.NUM_FRAMES,
-                    "diffusion_steps": cfg.DIFFUSION_STEPS,
-                },
-            )
-
-        model     = TemporalUNet(cfg).to(device)
+        model = TemporalUNet(cfg).to(device)
         optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.LEARNING_RATE)
 
+        vae = AutoencoderKL.from_pretrained(
+            "stabilityai/sd-vae-ft-mse"
+        ).to(device)
+        vae.eval()
+
+        scheduler = DDPMScheduler(num_train_timesteps=cfg.DIFFUSION_STEPS)
+
         print(f"\n  Training for {cfg.EPOCHS} epochs...")
+
         for epoch in range(cfg.EPOCHS):
             model.train()
+
             batch = get_dummy_batch(batch_size=cfg.BATCH_SIZE, device=str(device))
-            noisy = get_dummy_noisy_latents(batch["visual_latents"], batch["timesteps"])
+
+            latents = batch["visual_latents"].to(device).float()
+            text    = batch["text_embeddings"].to(device)
+            t       = batch["timesteps"].to(device)
+
+            noise = torch.randn_like(latents)
+            noisy_latents = scheduler.add_noise(latents, noise, t)
 
             optimizer.zero_grad()
-            loss = compute_loss(
-                model, noisy, batch["noise_target"],
-                batch["timesteps"], batch["text_embeddings"],
-            )
+
+            noise_pred = model(noisy_latents, t, text)
+            loss = torch.nn.functional.mse_loss(noise_pred, noise)
+
             loss.backward()
             optimizer.step()
 
             print(f"  Epoch [{epoch+1:>3}/{cfg.EPOCHS}]  loss: {loss.item():.6f}")
-            if args.use_wandb:
-                wandb.log({"train_loss": loss.item(), "epoch": epoch + 1})
 
-        if args.use_wandb:
-            wandb.finish()
+        print("\n  Training complete ✅")
 
-        print("\n  Done. Save weights to your workspace ONLY.")
-        print("  Do NOT push .pth files to GitHub (see protocol).")
+        # 🔥 INFERENCE HERE (IMPORTANT)
+        images = run_inference(model, vae, device)
+
+        vutils.save_image(images[0, 0], "output_frame.png")
+
+        print("Image saved as output_frame.png ✅")
+
+
+
