@@ -1,10 +1,33 @@
-*.npy
-*.pt
+# Model weights
+checkpoints/*.pt
 *.pth
+
+# Logs
+logs/
+run.log
+nohup.out
+*.log
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# Data files
+*.npy
+*.mp4
+*.mat
+*.bin
+
+# Keep .pt files out of git
+# (too large, stored on server)
+data/*.pt
+
+# Environment
 .env
-wandb/
+venv/
+
+# OS
 .DS_Store
-subteam3_vit/checkpoints/*
-!subteam3_vit/checkpoints/.gitkeep
+Thumbs.db
