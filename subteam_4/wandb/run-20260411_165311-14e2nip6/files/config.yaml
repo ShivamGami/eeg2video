@@ -1,0 +1,56 @@
+_wandb:
+    value:
+        cli_version: 0.25.1
+        e:
+            0gzq872uprsb5mo59v25obk2ijchfnil:
+                codePath: train_dynamics_mlp.py
+                codePathLocal: train_dynamics_mlp.py
+                cpu_count: 16
+                cpu_count_logical: 32
+                cudaVersion: "12.4"
+                disk:
+                    /:
+                        total: "704400113664"
+                        used: "39517233152"
+                email: vm46830289@gmail.com
+                executable: /home/teaching/.conda/envs/eeg2video_env/bin/python
+                git:
+                    commit: f368241e15b44e84dc3cf943c54a6801dd9dfbfd
+                    remote: https://github.com/manan0005/eeg2video-cs671.git
+                gpu: NVIDIA RTX A5000
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 8192
+                      memoryTotal: "25757220864"
+                      name: NVIDIA RTX A5000
+                      uuid: GPU-cb7ac2d7-597b-215d-491b-1db39c0de0ec
+                host: dslab
+                memory:
+                    total: "134908121088"
+                os: Linux-6.8.0-106-generic-x86_64-with-glibc2.35
+                program: /home/teaching/vishal_workspace/eeg2video-cs671/train_dynamics_mlp.py
+                python: CPython 3.10.20
+                root: /home/teaching/vishal_workspace/eeg2video-cs671
+                startedAt: "2026-04-11T11:23:11.288703Z"
+                writerId: 0gzq872uprsb5mo59v25obk2ijchfnil
+        m: []
+        python_version: 3.10.20
+        t:
+            "1":
+                - 1
+                - 5
+                - 53
+            "2":
+                - 1
+                - 5
+                - 53
+            "3":
+                - 2
+                - 13
+            "4": 3.10.20
+            "5": 0.25.1
+            "8":
+                - 2
+            "12": 0.25.1
+            "13": linux-x86_64

@@ -1,0 +1,165 @@
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/home/teaching/.local/python-3.10.13/bin/wandb", line 3, in <module>
+    from wandb.cli.cli import cli
+  File "/home/teaching/.local/python-3.10.13/lib/python3.10/site-packages/wandb/__init__.py", line 22, in <module>
+    from wandb.sdk.lib import wb_logging as _wb_logging
+  File "/home/teaching/.local/python-3.10.13/lib/python3.10/site-packages/wandb/sdk/__init__.py", line 24, in <module>
+    from . import wandb_helper as helper
+  File "/home/teaching/.local/python-3.10.13/lib/python3.10/site-packages/wandb/sdk/wandb_helper.py", line 6, in <module>
+    from .lib import config_util
+  File "/home/teaching/.local/python-3.10.13/lib/python3.10/site-packages/wandb/sdk/lib/config_util.py", line 8, in <module>
+    from wandb.util import load_yaml
+  File "/home/teaching/.local/python-3.10.13/lib/python3.10/site-packages/wandb/util.py", line 59, in <module>
+    from wandb.sdk.lib import filesystem, runid
+  File "/home/teaching/.local/python-3.10.13/lib/python3.10/site-packages/wandb/sdk/lib/filesystem.py", line 2, in <module>
+    import ctypes
+  File "/home/teaching/.local/python-3.10.13/lib/python3.10/ctypes/__init__.py", line 9, in <module>
+    from _ctypes import Union, Structure, Array
+ModuleNotFoundError: No module named '_ctypes'
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: vm46830289 (vm46830289-iit-mandi) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run ab0bowk7
+wandb: Tracking run with wandb version 0.25.1
+wandb: Run data is saved locally in /home/teaching/vishal_workspace/eeg2video-cs671/wandb/run-20260412_154557-ab0bowk7
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run text-mlp-v9-final
+wandb: ⭐️ View project at https://wandb.ai/vm46830289-iit-mandi/eeg2video-subteam4
+wandb: 🚀 View run at https://wandb.ai/vm46830289-iit-mandi/eeg2video-subteam4/runs/ab0bowk7
+📊 DATASET LOADED | Mode: TRAIN | Samples: 203742
+📊 DATASET LOADED | Mode: VAL | Samples: 43659
+Loaded Phase 1 weights from text_mlp_pretrained.pth — skipping Phase 1
+
+PHASE 2: Fine-tuning (125 epochs, checkpoint on val_cos_sim, unfreeze at epoch 71)...
+Epoch  51/175 | MSE: 0.69050 | Val Loss: 0.71116 | Val Acc: 0.917 | CosSim: 0.5869 | LR: 3.00e-05
+  Best saved | CosSim: 0.5869 | Val Acc: 0.917 | Val MSE: 0.69050
+Epoch  52/175 | MSE: 0.68339 | Val Loss: 0.70526 | Val Acc: 0.927 | CosSim: 0.5923 | LR: 3.00e-05
+  Best saved | CosSim: 0.5923 | Val Acc: 0.927 | Val MSE: 0.68339
+Epoch  53/175 | MSE: 0.68143 | Val Loss: 0.70469 | Val Acc: 0.930 | CosSim: 0.5938 | LR: 3.00e-05
+  Best saved | CosSim: 0.5938 | Val Acc: 0.930 | Val MSE: 0.68143
+Epoch  54/175 | MSE: 0.68046 | Val Loss: 0.70514 | Val Acc: 0.928 | CosSim: 0.5946 | LR: 3.00e-05
+  Best saved | CosSim: 0.5946 | Val Acc: 0.928 | Val MSE: 0.68046
+Epoch  55/175 | MSE: 0.67995 | Val Loss: 0.70608 | Val Acc: 0.931 | CosSim: 0.5950 | LR: 3.00e-05
+  Best saved | CosSim: 0.5950 | Val Acc: 0.931 | Val MSE: 0.67995
+Epoch  56/175 | MSE: 0.67973 | Val Loss: 0.70732 | Val Acc: 0.932 | CosSim: 0.5951 | LR: 3.00e-05
+  Best saved | CosSim: 0.5951 | Val Acc: 0.932 | Val MSE: 0.67973
+Epoch  57/175 | MSE: 0.67954 | Val Loss: 0.70858 | Val Acc: 0.929 | CosSim: 0.5953 | LR: 3.00e-05
+  Best saved | CosSim: 0.5953 | Val Acc: 0.929 | Val MSE: 0.67954
+Epoch  58/175 | MSE: 0.67949 | Val Loss: 0.71001 | Val Acc: 0.928 | CosSim: 0.5953 | LR: 3.00e-05
+  Best saved | CosSim: 0.5953 | Val Acc: 0.928 | Val MSE: 0.67949
+Epoch  59/175 | MSE: 0.67937 | Val Loss: 0.71134 | Val Acc: 0.932 | CosSim: 0.5954 | LR: 3.00e-05
+  Best saved | CosSim: 0.5954 | Val Acc: 0.932 | Val MSE: 0.67937
+Epoch  60/175 | MSE: 0.67929 | Val Loss: 0.71272 | Val Acc: 0.931 | CosSim: 0.5955 | LR: 3.00e-05
+  Best saved | CosSim: 0.5955 | Val Acc: 0.931 | Val MSE: 0.67929
+Epoch  61/175 | MSE: 0.67926 | Val Loss: 0.71417 | Val Acc: 0.934 | CosSim: 0.5955 | LR: 3.00e-05
+  Best saved | CosSim: 0.5955 | Val Acc: 0.934 | Val MSE: 0.67926
+Epoch  62/175 | MSE: 0.67919 | Val Loss: 0.71556 | Val Acc: 0.931 | CosSim: 0.5956 | LR: 3.00e-05
+  Best saved | CosSim: 0.5956 | Val Acc: 0.931 | Val MSE: 0.67919
+Epoch  63/175 | MSE: 0.67918 | Val Loss: 0.71702 | Val Acc: 0.933 | CosSim: 0.5956 | LR: 3.00e-05
+  Best saved | CosSim: 0.5956 | Val Acc: 0.933 | Val MSE: 0.67918
+Epoch  64/175 | MSE: 0.67911 | Val Loss: 0.71841 | Val Acc: 0.931 | CosSim: 0.5956 | LR: 3.00e-05
+  Best saved | CosSim: 0.5956 | Val Acc: 0.931 | Val MSE: 0.67911
+Epoch  65/175 | MSE: 0.67910 | Val Loss: 0.71986 | Val Acc: 0.932 | CosSim: 0.5956 | LR: 3.00e-05
+  Best saved | CosSim: 0.5956 | Val Acc: 0.932 | Val MSE: 0.67910
+Epoch  66/175 | MSE: 0.67910 | Val Loss: 0.72133 | Val Acc: 0.930 | CosSim: 0.5956 | LR: 3.00e-05
+Epoch  67/175 | MSE: 0.67910 | Val Loss: 0.72279 | Val Acc: 0.933 | CosSim: 0.5957 | LR: 3.00e-05
+  Best saved | CosSim: 0.5957 | Val Acc: 0.933 | Val MSE: 0.67910
+Epoch  68/175 | MSE: 0.67907 | Val Loss: 0.72423 | Val Acc: 0.934 | CosSim: 0.5956 | LR: 3.00e-05
+Epoch  69/175 | MSE: 0.67904 | Val Loss: 0.72566 | Val Acc: 0.934 | CosSim: 0.5957 | LR: 3.00e-05
+  Best saved | CosSim: 0.5957 | Val Acc: 0.934 | Val MSE: 0.67904
+Epoch  70/175 | MSE: 0.67900 | Val Loss: 0.72709 | Val Acc: 0.930 | CosSim: 0.5957 | LR: 3.00e-05
+  Best saved | CosSim: 0.5957 | Val Acc: 0.930 | Val MSE: 0.67900
+
+  >> Epoch 71: Adapter UNFROZEN
+
+Epoch  71/175 | MSE: 0.67986 | Val Loss: 0.77175 | Val Acc: 0.932 | CosSim: 0.5950 | LR: 3.00e-05
+Epoch  72/175 | MSE: 0.67985 | Val Loss: 0.73234 | Val Acc: 0.931 | CosSim: 0.5950 | LR: 3.00e-05
+Epoch  73/175 | MSE: 0.67981 | Val Loss: 0.73287 | Val Acc: 0.931 | CosSim: 0.5951 | LR: 3.00e-05
+Epoch  74/175 | MSE: 0.67973 | Val Loss: 0.73418 | Val Acc: 0.927 | CosSim: 0.5951 | LR: 2.99e-05
+Epoch  75/175 | MSE: 0.67947 | Val Loss: 0.73525 | Val Acc: 0.929 | CosSim: 0.5953 | LR: 2.99e-05
+Epoch  76/175 | MSE: 0.67937 | Val Loss: 0.73651 | Val Acc: 0.933 | CosSim: 0.5954 | LR: 2.98e-05
+Epoch  77/175 | MSE: 0.67910 | Val Loss: 0.73773 | Val Acc: 0.932 | CosSim: 0.5957 | LR: 2.98e-05
+Epoch  78/175 | MSE: 0.67851 | Val Loss: 0.73863 | Val Acc: 0.930 | CosSim: 0.5961 | LR: 2.97e-05
+  Best saved | CosSim: 0.5961 | Val Acc: 0.930 | Val MSE: 0.67851
+Epoch  79/175 | MSE: 0.67793 | Val Loss: 0.73961 | Val Acc: 0.931 | CosSim: 0.5966 | LR: 2.96e-05
+  Best saved | CosSim: 0.5966 | Val Acc: 0.931 | Val MSE: 0.67793
+Epoch  80/175 | MSE: 0.67729 | Val Loss: 0.74052 | Val Acc: 0.930 | CosSim: 0.5971 | LR: 2.95e-05
+  Best saved | CosSim: 0.5971 | Val Acc: 0.930 | Val MSE: 0.67729
+Epoch  81/175 | MSE: 0.67741 | Val Loss: 0.74213 | Val Acc: 0.923 | CosSim: 0.5970 | LR: 2.94e-05
+Epoch  82/175 | MSE: 0.67757 | Val Loss: 0.74376 | Val Acc: 0.920 | CosSim: 0.5970 | LR: 2.93e-05
+Epoch  83/175 | MSE: 0.67793 | Val Loss: 0.74572 | Val Acc: 0.919 | CosSim: 0.5967 | LR: 2.91e-05
+Epoch  84/175 | MSE: 0.67813 | Val Loss: 0.74743 | Val Acc: 0.918 | CosSim: 0.5965 | LR: 2.90e-05
+Epoch  85/175 | MSE: 0.67903 | Val Loss: 0.74991 | Val Acc: 0.915 | CosSim: 0.5959 | LR: 2.88e-05
+Epoch  86/175 | MSE: 0.67960 | Val Loss: 0.75195 | Val Acc: 0.902 | CosSim: 0.5955 | LR: 2.86e-05
+Epoch  87/175 | MSE: 0.68042 | Val Loss: 0.75432 | Val Acc: 0.902 | CosSim: 0.5949 | LR: 2.85e-05
+Epoch  88/175 | MSE: 0.68108 | Val Loss: 0.75653 | Val Acc: 0.897 | CosSim: 0.5944 | LR: 2.83e-05
+Epoch  89/175 | MSE: 0.68199 | Val Loss: 0.75907 | Val Acc: 0.892 | CosSim: 0.5938 | LR: 2.81e-05
+Epoch  90/175 | MSE: 0.68197 | Val Loss: 0.76048 | Val Acc: 0.889 | CosSim: 0.5939 | LR: 2.78e-05
+Epoch  91/175 | MSE: 0.68277 | Val Loss: 0.76294 | Val Acc: 0.891 | CosSim: 0.5932 | LR: 2.76e-05
+Epoch  92/175 | MSE: 0.68505 | Val Loss: 0.76703 | Val Acc: 0.885 | CosSim: 0.5915 | LR: 2.74e-05
+Epoch  93/175 | MSE: 0.68556 | Val Loss: 0.76901 | Val Acc: 0.881 | CosSim: 0.5912 | LR: 2.71e-05
+Epoch  94/175 | MSE: 0.68589 | Val Loss: 0.77091 | Val Acc: 0.875 | CosSim: 0.5911 | LR: 2.69e-05
+Epoch  95/175 | MSE: 0.68568 | Val Loss: 0.77218 | Val Acc: 0.873 | CosSim: 0.5912 | LR: 2.66e-05
+Epoch  96/175 | MSE: 0.68731 | Val Loss: 0.77553 | Val Acc: 0.872 | CosSim: 0.5898 | LR: 2.63e-05
+Epoch  97/175 | MSE: 0.68637 | Val Loss: 0.77581 | Val Acc: 0.871 | CosSim: 0.5907 | LR: 2.60e-05
+Epoch  98/175 | MSE: 0.68762 | Val Loss: 0.77882 | Val Acc: 0.863 | CosSim: 0.5898 | LR: 2.58e-05
+Epoch  99/175 | MSE: 0.68647 | Val Loss: 0.77887 | Val Acc: 0.867 | CosSim: 0.5908 | LR: 2.55e-05
+Epoch 100/175 | MSE: 0.68863 | Val Loss: 0.78293 | Val Acc: 0.860 | CosSim: 0.5892 | LR: 2.51e-05
+Epoch 101/175 | MSE: 0.68943 | Val Loss: 0.78547 | Val Acc: 0.860 | CosSim: 0.5884 | LR: 2.48e-05
+Epoch 102/175 | MSE: 0.68904 | Val Loss: 0.78646 | Val Acc: 0.858 | CosSim: 0.5890 | LR: 2.45e-05
+Epoch 103/175 | MSE: 0.69000 | Val Loss: 0.78905 | Val Acc: 0.853 | CosSim: 0.5883 | LR: 2.42e-05
+Epoch 104/175 | MSE: 0.68842 | Val Loss: 0.78861 | Val Acc: 0.863 | CosSim: 0.5894 | LR: 2.38e-05
+wandb: updating run metadata
+wandb: updating run metadata; uploading history steps 54-54, summary, console lines 83-85
+wandb: uploading output.log; uploading wandb-summary.json; uploading config.yaml
+wandb: uploading data
+wandb: 
+wandb: Run history:
+wandb: adapter_frozen ███████████████▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:     cos_weight ▁▁▁▂▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇███
+wandb:          epoch ▁▁▁▂▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▆▇▇▇▇███
+wandb:           loss █▄▃▃▃▄▄▄▄▄▄▄▄▄▄▆▅▅▅▅▅▅▅▅▅▄▄▄▄▄▃▃▃▃▃▂▂▂▁▁
+wandb:             lr █████████████████████▇▇▇▇▆▆▆▆▅▅▅▄▄▃▃▂▂▂▁
+wandb:      train_acc ▁▇▇▇▇███████████████████████████████████
+wandb:  train_cos_sim ▁▃▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▇▇▇███
+wandb:      train_mse █▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▄▄▄▄▄▄▄▃▃▃▂▂▂▂▂▂▁▁▁
+wandb:        val_acc ▆▇█▇██▇████████████▇████▇▇▅▅▅▄▄▃▃▂▂▁▂▁▁▁
+wandb:    val_cos_sim ▁▅▆▆▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇███▇▆▆▆▆▄▄▄▃▄▄▃▂▂▂
+wandb:             +2 ...
+wandb: 
+wandb: Run summary:
+wandb: adapter_frozen 0
+wandb:     cos_weight 0.24597
+wandb:          epoch 105
+wandb:           loss 0.66765
+wandb:             lr 2e-05
+wandb:          phase finetune
+wandb:      train_acc 0.94497
+wandb:  train_cos_sim 0.66322
+wandb:      train_mse 0.58457
+wandb:        val_acc 0.85848
+wandb:             +3 ...
+wandb: 
+wandb: 🚀 View run text-mlp-v9-final at: https://wandb.ai/vm46830289-iit-mandi/eeg2video-subteam4/runs/ab0bowk7
+wandb: ⭐️ View project at: https://wandb.ai/vm46830289-iit-mandi/eeg2video-subteam4
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260412_154557-ab0bowk7/logs
+Epoch 105/175 | MSE: 0.69002 | Val Loss: 0.79207 | Val Acc: 0.858 | CosSim: 0.5881 | LR: 2.35e-05
+
+Early stopping at epoch 105 (CosSim no improvement for 25 epochs)
+
+Text MLP done. Best val_cos_sim: 0.5971
+python: can't open file '/home/teaching/vishal_workspace/eeg2video-cs671/test_final_overfit.py': [Errno 2] No such file or directory
+🌟 SUB-TEAM 4 MASTER PIPELINE STARTING 🌟
+
+🚀 STARTING: Text MLP Phase 1: Pre-training (Fake Data Trick)
+Executing: python train_text_mlp.py
+✅ FINISHED: Text MLP Phase 1: Pre-training (Fake Data Trick) in 48.89 minutes
+
+📝 Note: Ensure your train_text_mlp.py handles real EEG fine-tuning after pre-training.
+
+🚀 STARTING: Final Real-Data Sanity Check
+Executing: python test_final_overfit.py
+❌ FAILED: Final Real-Data Sanity Check
+
+🏆 ALL SUB-TEAM 4 TASKS COMPLETED SUCCESSFULLY!

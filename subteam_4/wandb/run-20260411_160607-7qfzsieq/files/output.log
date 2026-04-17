@@ -1,0 +1,55 @@
+📊 DATASET LOADED | Mode: TRAIN | Samples: 203742
+📊 DATASET LOADED | Mode: VAL | Samples: 43659
+🚀 PHASE 1: Pre-training with Noise (Denoising Trick)...
+Pre-train Epoch 1/25 | Loss: 0.189289
+Pre-train Epoch 2/25 | Loss: 0.062790
+Pre-train Epoch 3/25 | Loss: 0.049267
+Pre-train Epoch 4/25 | Loss: 0.044285
+Pre-train Epoch 5/25 | Loss: 0.041903
+Pre-train Epoch 6/25 | Loss: 0.040522
+Pre-train Epoch 7/25 | Loss: 0.039602
+Pre-train Epoch 8/25 | Loss: 0.038916
+Pre-train Epoch 9/25 | Loss: 0.038449
+Pre-train Epoch 10/25 | Loss: 0.038038
+Pre-train Epoch 11/25 | Loss: 0.037654
+Pre-train Epoch 12/25 | Loss: 0.037360
+Pre-train Epoch 13/25 | Loss: 0.037071
+Pre-train Epoch 14/25 | Loss: 0.036832
+Pre-train Epoch 15/25 | Loss: 0.036600
+Pre-train Epoch 16/25 | Loss: 0.036410
+Pre-train Epoch 17/25 | Loss: 0.036248
+Pre-train Epoch 18/25 | Loss: 0.036103
+Pre-train Epoch 19/25 | Loss: 0.035935
+Pre-train Epoch 20/25 | Loss: 0.035793
+Pre-train Epoch 21/25 | Loss: 0.035682
+Pre-train Epoch 22/25 | Loss: 0.035536
+Pre-train Epoch 23/25 | Loss: 0.035460
+Pre-train Epoch 24/25 | Loss: 0.035320
+Pre-train Epoch 25/25 | Loss: 0.035204
+
+🚀 PHASE 2: Fine-tuning on REAL EEG Data...
+Fine-tune Epoch 26/50 | Loss: 0.692478 | Val Loss: 0.680089
+Fine-tune Epoch 27/50 | Loss: 0.682213 | Val Loss: 0.679811
+Fine-tune Epoch 28/50 | Loss: 0.680940 | Val Loss: 0.679699
+Fine-tune Epoch 29/50 | Loss: 0.680174 | Val Loss: 0.679284
+Fine-tune Epoch 30/50 | Loss: 0.679350 | Val Loss: 0.679029
+Fine-tune Epoch 31/50 | Loss: 0.678404 | Val Loss: 0.678406
+Fine-tune Epoch 32/50 | Loss: 0.677155 | Val Loss: 0.677735
+Fine-tune Epoch 33/50 | Loss: 0.675560 | Val Loss: 0.677609
+Fine-tune Epoch 34/50 | Loss: 0.673722 | Val Loss: 0.677071
+Fine-tune Epoch 35/50 | Loss: 0.671614 | Val Loss: 0.676850
+Fine-tune Epoch 36/50 | Loss: 0.669499 | Val Loss: 0.676800
+Fine-tune Epoch 37/50 | Loss: 0.667384 | Val Loss: 0.676445
+Fine-tune Epoch 38/50 | Loss: 0.665070 | Val Loss: 0.675393
+Fine-tune Epoch 39/50 | Loss: 0.662875 | Val Loss: 0.676522
+Fine-tune Epoch 40/50 | Loss: 0.660489 | Val Loss: 0.675907
+Fine-tune Epoch 41/50 | Loss: 0.658154 | Val Loss: 0.675749
+Fine-tune Epoch 42/50 | Loss: 0.655681 | Val Loss: 0.676028
+Fine-tune Epoch 43/50 | Loss: 0.653199 | Val Loss: 0.678269
+Fine-tune Epoch 44/50 | Loss: 0.650462 | Val Loss: 0.675837
+Fine-tune Epoch 45/50 | Loss: 0.647697 | Val Loss: 0.676422
+Fine-tune Epoch 46/50 | Loss: 0.644739 | Val Loss: 0.675766
+Fine-tune Epoch 47/50 | Loss: 0.641793 | Val Loss: 0.675897
+Fine-tune Epoch 48/50 | Loss: 0.638653 | Val Loss: 0.674301
+Fine-tune Epoch 49/50 | Loss: 0.635535 | Val Loss: 0.675622
+Fine-tune Epoch 50/50 | Loss: 0.632857 | Val Loss: 0.675825

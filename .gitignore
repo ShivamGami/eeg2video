@@ -1,33 +1,13 @@
-# Model weights
-checkpoints/*.pt
-*.pth
 
-# Logs
-logs/
-run.log
-nohup.out
-*.log
-
-# Python cache
 __pycache__/
-*.pyc
-*.pyo
-.ipynb_checkpoints/
 
-# Data files
+# Ignore massive data folders
+processed_raw_clips/
+processed_features/
+
+# Ignore heavy data files
+*.pt
 *.npy
 *.mp4
-*.mat
-*.bin
 
-# Keep .pt files out of git
-# (too large, stored on server)
-data/*.pt
-
-# Environment
-.env
-venv/
-
-# OS
-.DS_Store
-Thumbs.db
+subteam2_videoldm/

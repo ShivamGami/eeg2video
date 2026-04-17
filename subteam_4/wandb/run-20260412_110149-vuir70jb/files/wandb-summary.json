@@ -1,0 +1,1 @@
+{"train_cos_sim":0.640672979867039,"val_loss":0.7751665437779232,"epoch":97,"adapter_frozen":0,"lr":2.604594154601841e-05,"_runtime":4771,"_timestamp":1.775976682569467e+09,"_step":96,"train_acc":0.9408606989075191,"loss":0.69591486090841,"cos_weight":0.21693548387096773,"phase":"finetune","val_cos_sim":0.5909958603786446,"_wandb":{"runtime":4771},"val_acc":0.8760674177554616}
