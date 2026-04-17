@@ -1,0 +1,112 @@
+📊 DATASET LOADED | Mode: TRAIN | Samples: 203742
+📊 DATASET LOADED | Mode: VAL | Samples: 43659
+PHASE 1: Pre-training with Noise (50 epochs)...
+Pre-train  1/50 | Loss: 0.137308 | Val Loss: 0.027391 | Train Acc: 0.988 | Val Acc: 1.000 | LR: 9.99e-05
+Pre-train  2/50 | Loss: 0.050125 | Val Loss: 0.017193 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 9.96e-05
+Pre-train  3/50 | Loss: 0.043081 | Val Loss: 0.014513 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 9.92e-05
+Pre-train  4/50 | Loss: 0.040700 | Val Loss: 0.013132 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 9.86e-05
+Pre-train  5/50 | Loss: 0.039480 | Val Loss: 0.012408 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 9.78e-05
+Pre-train  6/50 | Loss: 0.038673 | Val Loss: 0.011709 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 9.68e-05
+Pre-train  7/50 | Loss: 0.038079 | Val Loss: 0.011318 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 9.57e-05
+Pre-train  8/50 | Loss: 0.037600 | Val Loss: 0.010837 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 9.44e-05
+Pre-train  9/50 | Loss: 0.037176 | Val Loss: 0.010611 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 9.30e-05
+Pre-train 10/50 | Loss: 0.036869 | Val Loss: 0.010551 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 9.14e-05
+Pre-train 11/50 | Loss: 0.036598 | Val Loss: 0.010343 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 8.97e-05
+Pre-train 12/50 | Loss: 0.036340 | Val Loss: 0.010164 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 8.78e-05
+Pre-train 13/50 | Loss: 0.036101 | Val Loss: 0.010010 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 8.58e-05
+Pre-train 14/50 | Loss: 0.035863 | Val Loss: 0.009737 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 8.37e-05
+Pre-train 15/50 | Loss: 0.035717 | Val Loss: 0.009587 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 8.15e-05
+Pre-train 16/50 | Loss: 0.035544 | Val Loss: 0.009533 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 7.91e-05
+Pre-train 17/50 | Loss: 0.035360 | Val Loss: 0.009360 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 7.67e-05
+Pre-train 18/50 | Loss: 0.035264 | Val Loss: 0.009349 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 7.42e-05
+Pre-train 19/50 | Loss: 0.035089 | Val Loss: 0.009244 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 7.16e-05
+Pre-train 20/50 | Loss: 0.034948 | Val Loss: 0.009178 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 6.89e-05
+Pre-train 21/50 | Loss: 0.034835 | Val Loss: 0.009012 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 6.62e-05
+Pre-train 22/50 | Loss: 0.034746 | Val Loss: 0.009053 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 6.34e-05
+Pre-train 23/50 | Loss: 0.034635 | Val Loss: 0.008959 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 6.06e-05
+Pre-train 24/50 | Loss: 0.034505 | Val Loss: 0.008866 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 5.78e-05
+Pre-train 25/50 | Loss: 0.034419 | Val Loss: 0.008770 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 5.50e-05
+Pre-train 26/50 | Loss: 0.034325 | Val Loss: 0.008802 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 5.22e-05
+Pre-train 27/50 | Loss: 0.034194 | Val Loss: 0.008689 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 4.94e-05
+Pre-train 28/50 | Loss: 0.034172 | Val Loss: 0.008585 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 4.66e-05
+Pre-train 29/50 | Loss: 0.034052 | Val Loss: 0.008577 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 4.38e-05
+Pre-train 30/50 | Loss: 0.033974 | Val Loss: 0.008575 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 4.11e-05
+Pre-train 31/50 | Loss: 0.033909 | Val Loss: 0.008436 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 3.84e-05
+Pre-train 32/50 | Loss: 0.033855 | Val Loss: 0.008431 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 3.58e-05
+Pre-train 33/50 | Loss: 0.033820 | Val Loss: 0.008510 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 3.33e-05
+Pre-train 34/50 | Loss: 0.033731 | Val Loss: 0.008429 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 3.09e-05
+Pre-train 35/50 | Loss: 0.033696 | Val Loss: 0.008396 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 2.85e-05
+Pre-train 36/50 | Loss: 0.033662 | Val Loss: 0.008343 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 2.63e-05
+Pre-train 37/50 | Loss: 0.033596 | Val Loss: 0.008357 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 2.42e-05
+Pre-train 38/50 | Loss: 0.033567 | Val Loss: 0.008286 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 2.22e-05
+Pre-train 39/50 | Loss: 0.033516 | Val Loss: 0.008272 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 2.03e-05
+Pre-train 40/50 | Loss: 0.033484 | Val Loss: 0.008188 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 1.86e-05
+Pre-train 41/50 | Loss: 0.033449 | Val Loss: 0.008206 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 1.70e-05
+Pre-train 42/50 | Loss: 0.033440 | Val Loss: 0.008200 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 1.56e-05
+Pre-train 43/50 | Loss: 0.033392 | Val Loss: 0.008151 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 1.43e-05
+Pre-train 44/50 | Loss: 0.033335 | Val Loss: 0.008182 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 1.32e-05
+Pre-train 45/50 | Loss: 0.033344 | Val Loss: 0.008160 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 1.22e-05
+Pre-train 46/50 | Loss: 0.033296 | Val Loss: 0.008153 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 1.14e-05
+Pre-train 47/50 | Loss: 0.033272 | Val Loss: 0.008092 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 1.08e-05
+Pre-train 48/50 | Loss: 0.033293 | Val Loss: 0.008117 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 1.04e-05
+Pre-train 49/50 | Loss: 0.033240 | Val Loss: 0.008099 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 1.01e-05
+Pre-train 50/50 | Loss: 0.033266 | Val Loss: 0.008118 | Train Acc: 1.000 | Val Acc: 1.000 | LR: 1.00e-05
+Phase 1 done. Best val_loss: 0.008092
+
+PHASE 2: Fine-tuning (125 epochs, adapter unfreeze at epoch 71)...
+Epoch  51/175 | Loss: 19.67319 | Val Loss: 19.59074 | Train Acc: 0.731 | Val Acc: 0.913 | Val CosSim: 0.5865 | LR: 3.00e-05
+  Best saved | Val Loss: 19.59074 | Val Acc: 0.913 | Val CosSim: 0.5865
+Epoch  52/175 | Loss: 19.60180 | Val Loss: 19.57733 | Train Acc: 0.907 | Val Acc: 0.924 | Val CosSim: 0.5921 | LR: 3.00e-05
+  Best saved | Val Loss: 19.57733 | Val Acc: 0.924 | Val CosSim: 0.5921
+Epoch  53/175 | Loss: 19.59466 | Val Loss: 19.58877 | Train Acc: 0.921 | Val Acc: 0.927 | Val CosSim: 0.5937 | LR: 3.00e-05
+Epoch  54/175 | Loss: 19.59356 | Val Loss: 19.58990 | Train Acc: 0.926 | Val Acc: 0.928 | Val CosSim: 0.5944 | LR: 3.00e-05
+Epoch  55/175 | Loss: 19.59170 | Val Loss: 19.59503 | Train Acc: 0.929 | Val Acc: 0.925 | Val CosSim: 0.5948 | LR: 3.00e-05
+Epoch  56/175 | Loss: 19.59414 | Val Loss: 19.60419 | Train Acc: 0.929 | Val Acc: 0.929 | Val CosSim: 0.5951 | LR: 3.00e-05
+Epoch  57/175 | Loss: 19.59442 | Val Loss: 19.58460 | Train Acc: 0.930 | Val Acc: 0.931 | Val CosSim: 0.5952 | LR: 3.00e-05
+Epoch  58/175 | Loss: 19.59550 | Val Loss: 19.58960 | Train Acc: 0.931 | Val Acc: 0.930 | Val CosSim: 0.5954 | LR: 3.00e-05
+Epoch  59/175 | Loss: 19.59734 | Val Loss: 19.59813 | Train Acc: 0.931 | Val Acc: 0.931 | Val CosSim: 0.5954 | LR: 3.00e-05
+Epoch  60/175 | Loss: 19.59823 | Val Loss: 19.60310 | Train Acc: 0.932 | Val Acc: 0.930 | Val CosSim: 0.5954 | LR: 3.00e-05
+Epoch  61/175 | Loss: 19.60041 | Val Loss: 19.59022 | Train Acc: 0.932 | Val Acc: 0.931 | Val CosSim: 0.5955 | LR: 3.00e-05
+Epoch  62/175 | Loss: 19.59911 | Val Loss: 19.61370 | Train Acc: 0.932 | Val Acc: 0.930 | Val CosSim: 0.5955 | LR: 3.00e-05
+Epoch  63/175 | Loss: 19.60375 | Val Loss: 19.59091 | Train Acc: 0.932 | Val Acc: 0.928 | Val CosSim: 0.5956 | LR: 3.00e-05
+Epoch  64/175 | Loss: 19.59948 | Val Loss: 19.60800 | Train Acc: 0.932 | Val Acc: 0.929 | Val CosSim: 0.5956 | LR: 3.00e-05
+Epoch  65/175 | Loss: 19.60332 | Val Loss: 19.60617 | Train Acc: 0.932 | Val Acc: 0.929 | Val CosSim: 0.5956 | LR: 3.00e-05
+Epoch  66/175 | Loss: 19.60736 | Val Loss: 19.60427 | Train Acc: 0.932 | Val Acc: 0.930 | Val CosSim: 0.5957 | LR: 3.00e-05
+Epoch  67/175 | Loss: 19.60706 | Val Loss: 19.60476 | Train Acc: 0.932 | Val Acc: 0.931 | Val CosSim: 0.5957 | LR: 3.00e-05
+Epoch  68/175 | Loss: 19.61252 | Val Loss: 19.60257 | Train Acc: 0.932 | Val Acc: 0.929 | Val CosSim: 0.5956 | LR: 3.00e-05
+Epoch  69/175 | Loss: 19.61238 | Val Loss: 19.61897 | Train Acc: 0.932 | Val Acc: 0.930 | Val CosSim: 0.5957 | LR: 3.00e-05
+Epoch  70/175 | Loss: 19.61224 | Val Loss: 19.61581 | Train Acc: 0.933 | Val Acc: 0.932 | Val CosSim: 0.5956 | LR: 3.00e-05
+
+  >> Epoch 71: Adapter UNFROZEN
+
+Epoch  71/175 | Loss: 2.29976 | Val Loss: 0.77907 | Train Acc: 0.931 | Val Acc: 0.926 | Val CosSim: 0.5950 | LR: 3.00e-05
+  Best saved | Val Loss: 0.77907 | Val Acc: 0.926 | Val CosSim: 0.5950
+Epoch  72/175 | Loss: 0.75117 | Val Loss: 0.73270 | Train Acc: 0.931 | Val Acc: 0.926 | Val CosSim: 0.5950 | LR: 3.00e-05
+  Best saved | Val Loss: 0.73270 | Val Acc: 0.926 | Val CosSim: 0.5950
+Epoch  73/175 | Loss: 0.73378 | Val Loss: 0.73312 | Train Acc: 0.931 | Val Acc: 0.931 | Val CosSim: 0.5951 | LR: 3.00e-05
+Epoch  74/175 | Loss: 0.73445 | Val Loss: 0.73464 | Train Acc: 0.931 | Val Acc: 0.929 | Val CosSim: 0.5949 | LR: 2.99e-05
+Epoch  75/175 | Loss: 0.73561 | Val Loss: 0.73554 | Train Acc: 0.931 | Val Acc: 0.932 | Val CosSim: 0.5952 | LR: 2.99e-05
+Epoch  76/175 | Loss: 0.73672 | Val Loss: 0.73667 | Train Acc: 0.931 | Val Acc: 0.931 | Val CosSim: 0.5954 | LR: 2.98e-05
+Epoch  77/175 | Loss: 0.73770 | Val Loss: 0.73783 | Train Acc: 0.932 | Val Acc: 0.930 | Val CosSim: 0.5955 | LR: 2.98e-05
+Epoch  78/175 | Loss: 0.73857 | Val Loss: 0.73908 | Train Acc: 0.932 | Val Acc: 0.927 | Val CosSim: 0.5957 | LR: 2.97e-05
+Epoch  79/175 | Loss: 0.73926 | Val Loss: 0.74011 | Train Acc: 0.932 | Val Acc: 0.936 | Val CosSim: 0.5961 | LR: 2.96e-05
+Epoch  80/175 | Loss: 0.73937 | Val Loss: 0.74094 | Train Acc: 0.933 | Val Acc: 0.930 | Val CosSim: 0.5965 | LR: 2.95e-05
+Epoch  81/175 | Loss: 0.73866 | Val Loss: 0.74247 | Train Acc: 0.933 | Val Acc: 0.927 | Val CosSim: 0.5966 | LR: 2.94e-05
+Epoch  82/175 | Loss: 0.73711 | Val Loss: 0.74348 | Train Acc: 0.934 | Val Acc: 0.923 | Val CosSim: 0.5970 | LR: 2.93e-05
+Epoch  83/175 | Loss: 0.73512 | Val Loss: 0.74549 | Train Acc: 0.934 | Val Acc: 0.924 | Val CosSim: 0.5966 | LR: 2.91e-05
+Epoch  84/175 | Loss: 0.73303 | Val Loss: 0.74660 | Train Acc: 0.935 | Val Acc: 0.923 | Val CosSim: 0.5969 | LR: 2.90e-05
+Epoch  85/175 | Loss: 0.73075 | Val Loss: 0.74890 | Train Acc: 0.936 | Val Acc: 0.919 | Val CosSim: 0.5964 | LR: 2.88e-05
+Epoch  86/175 | Loss: 0.72871 | Val Loss: 0.75101 | Train Acc: 0.938 | Val Acc: 0.915 | Val CosSim: 0.5960 | LR: 2.86e-05
+Epoch  87/175 | Loss: 0.72656 | Val Loss: 0.75330 | Train Acc: 0.939 | Val Acc: 0.908 | Val CosSim: 0.5955 | LR: 2.85e-05
+Epoch  88/175 | Loss: 0.72422 | Val Loss: 0.75515 | Train Acc: 0.939 | Val Acc: 0.910 | Val CosSim: 0.5952 | LR: 2.83e-05
+Epoch  89/175 | Loss: 0.72156 | Val Loss: 0.75826 | Train Acc: 0.940 | Val Acc: 0.903 | Val CosSim: 0.5942 | LR: 2.81e-05
+Epoch  90/175 | Loss: 0.71896 | Val Loss: 0.76041 | Train Acc: 0.940 | Val Acc: 0.894 | Val CosSim: 0.5938 | LR: 2.78e-05
+Epoch  91/175 | Loss: 0.71611 | Val Loss: 0.76217 | Train Acc: 0.940 | Val Acc: 0.891 | Val CosSim: 0.5937 | LR: 2.76e-05
+Epoch  92/175 | Loss: 0.71269 | Val Loss: 0.76496 | Train Acc: 0.941 | Val Acc: 0.889 | Val CosSim: 0.5927 | LR: 2.74e-05
+Epoch  93/175 | Loss: 0.70936 | Val Loss: 0.76714 | Train Acc: 0.941 | Val Acc: 0.887 | Val CosSim: 0.5923 | LR: 2.71e-05
+Epoch  94/175 | Loss: 0.70603 | Val Loss: 0.77012 | Train Acc: 0.939 | Val Acc: 0.878 | Val CosSim: 0.5914 | LR: 2.69e-05
+Epoch  95/175 | Loss: 0.70279 | Val Loss: 0.77194 | Train Acc: 0.940 | Val Acc: 0.875 | Val CosSim: 0.5912 | LR: 2.66e-05
+Epoch  96/175 | Loss: 0.69902 | Val Loss: 0.77445 | Train Acc: 0.941 | Val Acc: 0.874 | Val CosSim: 0.5905 | LR: 2.63e-05
+Epoch  97/175 | Loss: 0.69591 | Val Loss: 0.77517 | Train Acc: 0.941 | Val Acc: 0.876 | Val CosSim: 0.5910 | LR: 2.60e-05
+
+Early stopping at epoch 97 (no improvement for 25 epochs)

@@ -1,0 +1,1 @@
+{"val_loss":0.7592540519279346,"cos_weight":0.2,"adapter_frozen":0,"phase":"finetune","lr":3e-05,"_timestamp":1.7759250165244634e+09,"_runtime":1861,"_step":41,"epoch":42,"loss":0.7591974050854918,"_wandb":{"runtime":1861}}
