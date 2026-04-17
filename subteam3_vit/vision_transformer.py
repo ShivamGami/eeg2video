@@ -1,133 +1,154 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-import numpy as np
-import wandb
-import os
 
-# ─────────────────────────────────────────────
-# 1. SERVER PATHS & CONFIG
-# ─────────────────────────────────────────────
-EEG_DIR = "/home/teaching/TEAM_22_DATASET/SEED-DV/SEED-DV/EEG/"
-LATENT_DIR = "/home/teaching/vishal_workspace/eeg2video-cs671/processed_features/"
-
-# Check if we are on server
-IS_SERVER = os.path.exists(EEG_DIR)
-device = torch.device("cuda" if (IS_SERVER and torch.cuda.is_available()) else "cpu")
-
-if IS_SERVER:
-    torch.cuda.set_per_process_memory_fraction(0.2, device=0)
-    print("🚀 PHASE 2: REAL DATA TRAINING STARTING...")
-
-# ─────────────────────────────────────────────
-# 2. W&B INITIALIZATION
-# ─────────────────────────────────────────────
-wandb.init(
-    project="eeg2video-cs671",
-    group="Sub-team 3: Vision Transformer",
-    name="manan_real_data_run_01",
-    config={
-        "learning_rate": 0.0001, # Lowered for real data
-        "epochs": 50,
-        "batch_size": 1,         # Start small as real latents are large
-        "d_model": 256,
-        "num_heads": 8,
-        "num_layers": 6,         # Slightly deeper for real data
-        "eeg_chan": 62,
-        "eeg_time": 100,
-        "vis_frames": 6
-    }
-)
-
-# ─────────────────────────────────────────────
-# 3. REAL DATA LOADER (EEG + VISHAL'S LATENTS)
-# ─────────────────────────────────────────────
-class SEEDDVRealDataset(Dataset):
-    def __init__(self, eeg_dir, latent_dir, target_len=100):
-        self.eeg_files = [f for f in os.listdir(eeg_dir) if f.endswith('.npy')]
-        self.eeg_dir = eeg_dir
-        self.latent_dir = latent_dir
-        self.target_len = target_len
-        # The 7 latent files provided by Sub-team 2
-        self.latent_filenames = [
-            "1st_10min_latents.pt", "2nd_10min_latents.pt", "3rd_10min_latents.pt",
-            "4th_10min_latents.pt", "5th_10min_latents.pt", "6th_10min_latents.pt",
-            "7th_10min_latents.pt"
-        ]
-
-    def __len__(self):
-        return len(self.eeg_files)
-
-    def __getitem__(self, idx):
-        # 1. Load EEG Subject File (Shape: 7, 62, 104000)
-        eeg_path = os.path.join(self.eeg_dir, self.eeg_files[idx])
-        eeg_data = np.load(eeg_path, allow_pickle=True) # (7, 62, 104000)
-        
-        all_x = []
-        all_y = []
-        
-        # 2. Process all 7 segments for this subject
-        for i in range(7):
-            # EEG Slicing (same as Phase 1)
-            start = (eeg_data.shape[-1] // 2) - (self.target_len // 2)
-            eeg_slice = eeg_data[i, :, start:start+self.target_len]
-            all_x.append(torch.from_numpy(eeg_slice).float())
-            
-            # 3. Load Corresponding Real Latent from Vishal's work
-            latent_path = os.path.join(self.latent_dir, self.latent_filenames[i])
-            real_latents = torch.load(latent_path) # Shape: [Num_Clips, 6, 4, 32, 32]
-            
-            # For now, we take the first clip from the latent file 
-            # (Matches the single slice we take from EEG)
-            target_latent = real_latents[0] # (6, 4, 32, 32)
-            all_y.append(target_latent)
-
-        return torch.stack(all_x), torch.stack(all_y)
-
-# ─────────────────────────────────────────────
-# 4. MODEL (Unchanged Architecture)
-# ─────────────────────────────────────────────
-class EEGToLatentTransformer(nn.Module):
-    def __init__(self, cfg):
+class STFT_FeatureExtractor(nn.Module):
+    def __init__(self, in_channels=62, freq_bins=51, d_model=256):
         super().__init__()
-        self.embed = nn.Linear(cfg.eeg_chan * cfg.eeg_time, cfg.d_model)
-        encoder_layer = nn.TransformerEncoderLayer(d_model=cfg.d_model, nhead=cfg.num_heads, batch_first=True)
-        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=cfg.num_layers)
-        self.latent_proj = nn.Linear(cfg.d_model,6 * 4 * 32 * 32)
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_channels, d_model, kernel_size=(freq_bins, 3), padding=(0, 1)),
+            nn.BatchNorm2d(d_model),
+            nn.ELU(),
+            nn.Dropout(0.2)
+        )
 
     def forward(self, x):
-        # x: (B, 7, 62, 100)
-        B, S, C, T = x.shape
-        x = x.view(B * S, -1)              # Treat segments as part of batch for tokenization
-        tokens = self.embed(x)             # (B*7, d_model)
-        feat = self.transformer(tokens.unsqueeze(0)).squeeze(0)
-        out = self.latent_proj(feat)       # (B*7, 4096)
-        return out.view(B, S, 6, 4, 32, 32) # (B, 7 segments, 6 frames, ...)
+        x = self.conv(x) 
+        x = x.squeeze(2)          
+        x = x.permute(0, 2, 1)    
+        return x
 
-# ─────────────────────────────────────────────
-# 5. EXECUTION
-# ─────────────────────────────────────────────
-dataset = SEEDDVRealDataset(EEG_DIR, LATENT_DIR)
-loader = DataLoader(dataset, batch_size=wandb.config.batch_size, shuffle=True)
+class EEGVideoTransformer(nn.Module):
+    def __init__(self, d_model=256, nhead=8, num_layers=4):
+        super().__init__()
+        self.extractor = STFT_FeatureExtractor(d_model=d_model)
+        self.pos_encoder = nn.Parameter(torch.randn(1, 100, d_model))
 
-model = EEGToLatentTransformer(wandb.config).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=wandb.config.learning_rate)
-criterion = nn.MSELoss()
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model, nhead=nhead, dim_feedforward=d_model * 4, batch_first=True, dropout=0.1
+        )
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
-for epoch in range(wandb.config.epochs):
-    model.train()
-    for eeg, latents in loader:
-        eeg, latents = eeg.to(device), latents.to(device)
+        # Head A: Semantic Meaning (CLIP)
+        self.clip_mlp = nn.Sequential(
+            nn.Linear(d_model, 1024),
+            nn.GELU(),
+            nn.Dropout(0.2),
+            nn.Linear(1024, 512)
+        )
+
+        # Head B: Visual Latents (VQ-VAE)
+        self.latent_head = nn.Sequential(
+            nn.Linear(d_model, d_model * 2),
+            nn.GELU(),
+            nn.Linear(d_model * 2, 6 * 4 * 16 * 16)
+        )
+
+    def forward(self, x):
+        features = self.extractor(x)
+        T = features.size(1)
+        features = features + self.pos_encoder[:, :T, :]
+
+        t_out = self.transformer(features)
+        pooled_out = t_out.mean(dim=1)
+
+        clip_emb = self.clip_mlp(pooled_out)
+        latents = self.latent_head(pooled_out).view(-1, 6, 4, 16, 16)
+
+        return latents, clip_emb
+
+
+import os
+import torch.optim as optim
+import torch.nn.functional as F
+
+import os
+import torch
+from torch.utils.data import Dataset, DataLoader
+
+class BlueprintDataset(Dataset):
+    def __init__(self, stft_dir, target_dir):
+        self.stft_dir = stft_dir
+        self.target_dir = target_dir
         
-        optimizer.zero_grad()
-        output = model(eeg)
-        loss = criterion(output, latents)
-        loss.backward()
-        optimizer.step()
+        # Grab all the newly generated STFT files
+        self.stft_files = sorted([f for f in os.listdir(stft_dir) if f.startswith('eeg_sample') and f.endswith('.pt')])
+        self.stft_files.sort() # Keep things ordered
+
+    def __len__(self):
+        return len(self.stft_files)
+
+    def __getitem__(self, idx):
+        stft_filename = self.stft_files[idx]
         
-        wandb.log({"real_data_loss": loss.item()})
+        # Strip '_stft.pt' to find the base name (e.g., 'video_01')
+        base_name = stft_filename.split('_')[-1].replace('.pt', '')
+        
+        # 1. Load Input (EEG)
+        eeg_path = os.path.join(self.stft_dir, stft_filename)
+        eeg_tensor = torch.load(eeg_path)
+        
+        # 2. Load Target A (Visuals)
+        latent_path = os.path.join(self.target_dir, f"video_sample_{base_name}.pt")
+        latent_tensor = torch.load(latent_path)
+        
+        # 3. Load Target B (Semantics)
+        clip_path = os.path.join(self.target_dir, f"text_sample_{base_name}.pt")
+        clip_tensor = torch.load(clip_path)
+        
+        return {
+            'eeg': eeg_tensor,
+            'latents': latent_tensor,
+            'clip_emb': clip_tensor
+        }
+
+# --- TRAINING LOOP ---
+if __name__ == "__main__":
+    print("🚀 Initializing Blueprint Phase 1 Training...")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    print(f"Epoch {epoch} | Loss: {loss.item():.6f}")
+    # 1. Initialize the new Model
+    model = EEGVideoTransformer().to(device)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
-torch.save(model.state_dict(), "subteam3_vit/checkpoints/vit_real_data.pth")
-wandb.finish()
+# 2. Define Data Paths
+    TARGET_DIR = "/home/teaching/TEAM_22_DATASET/processed/processed/"
+    INPUT_DIR = "/home/teaching/manan_workspace/eeg2video-cs671/data/stft_features"
+    
+    # 3. Initialize DataLoader
+    print("Loading datasets into memory...")
+    dataset = BlueprintDataset(INPUT_DIR, TARGET_DIR)
+    dataloader = DataLoader(dataset, batch_size=8, shuffle=True)
+    
+    # ... then your model.train() and epoch loop starts here!
+    
+    
+    model.train()
+    for epoch in range(50):
+        total_epoch_loss = 0
+        for batch in dataloader:
+            # Inputs must be (B, 62, 51, T) for STFT
+            eeg_stft = batch['eeg'].to(device)       
+            target_latents = batch['latents'].to(device)   
+            target_clip = batch['clip_emb'].to(device)     
+
+            optimizer.zero_grad()
+
+            # Forward Pass: Get both targets
+            pred_latents, pred_clip = model(eeg_stft)
+
+            # Loss A: Visual Structure (MSE for VQ-VAE)
+            loss_visual = F.mse_loss(pred_latents, target_latents)
+
+            # Loss B: Semantic Meaning (Cosine Similarity for CLIP)
+            target_ones = torch.ones(eeg_stft.size(0)).to(device)
+            loss_semantic = F.cosine_embedding_loss(pred_clip, target_clip, target_ones)
+
+            # Combine and Backprop
+            loss = loss_visual + loss_semantic
+            loss.backward()
+            optimizer.step()
+            
+            total_epoch_loss += loss.item()
+            
+        print(f"Epoch {epoch} | Total Loss: {total_epoch_loss:.4f}")
+    print("✅ Architecture Ready. Waiting for DataLoader to begin training.")
