@@ -9,3 +9,5 @@ processed_features/
 *.pt
 *.npy
 *.mp4
+
+subteam2_videoldm/

@@ -1,0 +1,201 @@
+📊 DATASET LOADED | Mode: TRAIN | Samples: 203742
+📊 DATASET LOADED | Mode: VAL | Samples: 43659
+Label sanity | mean=0.494 std=0.500
+Training Dynamics Classifier (150 epochs, label smoothing, cosine LR)...
+Epoch   1/150 | Loss: 0.6937 | Train Acc: 0.507 | Val Acc: 0.516 | Gap: -0.009 | LR: 1.00e-04
+  Best saved (Val Acc: 0.5161)
+Epoch   2/150 | Loss: 0.6926 | Train Acc: 0.516 | Val Acc: 0.519 | Gap: -0.003 | LR: 1.00e-04
+  Best saved (Val Acc: 0.5185)
+Epoch   3/150 | Loss: 0.6921 | Train Acc: 0.522 | Val Acc: 0.521 | Gap: 0.002 | LR: 9.99e-05
+  Best saved (Val Acc: 0.5207)
+Epoch   4/150 | Loss: 0.6915 | Train Acc: 0.528 | Val Acc: 0.521 | Gap: 0.007 | LR: 9.98e-05
+  Best saved (Val Acc: 0.5209)
+Epoch   5/150 | Loss: 0.6909 | Train Acc: 0.533 | Val Acc: 0.523 | Gap: 0.010 | LR: 9.98e-05
+  Best saved (Val Acc: 0.5231)
+Epoch   6/150 | Loss: 0.6904 | Train Acc: 0.538 | Val Acc: 0.529 | Gap: 0.009 | LR: 9.96e-05
+  Best saved (Val Acc: 0.5294)
+Epoch   7/150 | Loss: 0.6896 | Train Acc: 0.541 | Val Acc: 0.528 | Gap: 0.013 | LR: 9.95e-05
+Epoch   8/150 | Loss: 0.6891 | Train Acc: 0.544 | Val Acc: 0.535 | Gap: 0.009 | LR: 9.94e-05
+  Best saved (Val Acc: 0.5348)
+Epoch   9/150 | Loss: 0.6883 | Train Acc: 0.548 | Val Acc: 0.534 | Gap: 0.014 | LR: 9.92e-05
+Epoch  10/150 | Loss: 0.6876 | Train Acc: 0.552 | Val Acc: 0.533 | Gap: 0.019 | LR: 9.90e-05
+Epoch  11/150 | Loss: 0.6870 | Train Acc: 0.554 | Val Acc: 0.538 | Gap: 0.016 | LR: 9.88e-05
+  Best saved (Val Acc: 0.5384)
+Epoch  12/150 | Loss: 0.6863 | Train Acc: 0.556 | Val Acc: 0.539 | Gap: 0.017 | LR: 9.86e-05
+  Best saved (Val Acc: 0.5388)
+Epoch  13/150 | Loss: 0.6852 | Train Acc: 0.561 | Val Acc: 0.541 | Gap: 0.020 | LR: 9.83e-05
+  Best saved (Val Acc: 0.5413)
+Epoch  14/150 | Loss: 0.6848 | Train Acc: 0.563 | Val Acc: 0.543 | Gap: 0.019 | LR: 9.81e-05
+  Best saved (Val Acc: 0.5432)
+Epoch  15/150 | Loss: 0.6838 | Train Acc: 0.566 | Val Acc: 0.545 | Gap: 0.021 | LR: 9.78e-05
+  Best saved (Val Acc: 0.5453)
+Epoch  16/150 | Loss: 0.6832 | Train Acc: 0.569 | Val Acc: 0.543 | Gap: 0.026 | LR: 9.75e-05
+Epoch  17/150 | Loss: 0.6822 | Train Acc: 0.572 | Val Acc: 0.545 | Gap: 0.027 | LR: 9.72e-05
+Epoch  18/150 | Loss: 0.6816 | Train Acc: 0.575 | Val Acc: 0.545 | Gap: 0.030 | LR: 9.68e-05
+Epoch  19/150 | Loss: 0.6814 | Train Acc: 0.575 | Val Acc: 0.548 | Gap: 0.027 | LR: 9.65e-05
+  Best saved (Val Acc: 0.5481)
+Epoch  20/150 | Loss: 0.6803 | Train Acc: 0.577 | Val Acc: 0.547 | Gap: 0.030 | LR: 9.61e-05
+Epoch  21/150 | Loss: 0.6795 | Train Acc: 0.581 | Val Acc: 0.548 | Gap: 0.033 | LR: 9.57e-05
+  Best saved (Val Acc: 0.5483)
+Epoch  22/150 | Loss: 0.6791 | Train Acc: 0.582 | Val Acc: 0.549 | Gap: 0.033 | LR: 9.53e-05
+  Best saved (Val Acc: 0.5493)
+Epoch  23/150 | Loss: 0.6783 | Train Acc: 0.584 | Val Acc: 0.549 | Gap: 0.035 | LR: 9.49e-05
+Epoch  24/150 | Loss: 0.6778 | Train Acc: 0.586 | Val Acc: 0.549 | Gap: 0.037 | LR: 9.44e-05
+Epoch  25/150 | Loss: 0.6770 | Train Acc: 0.588 | Val Acc: 0.552 | Gap: 0.036 | LR: 9.40e-05
+  Best saved (Val Acc: 0.5519)
+Epoch  26/150 | Loss: 0.6760 | Train Acc: 0.590 | Val Acc: 0.552 | Gap: 0.038 | LR: 9.35e-05
+  Best saved (Val Acc: 0.5523)
+Epoch  27/150 | Loss: 0.6754 | Train Acc: 0.591 | Val Acc: 0.551 | Gap: 0.040 | LR: 9.30e-05
+Epoch  28/150 | Loss: 0.6751 | Train Acc: 0.592 | Val Acc: 0.553 | Gap: 0.040 | LR: 9.25e-05
+  Best saved (Val Acc: 0.5526)
+Epoch  29/150 | Loss: 0.6742 | Train Acc: 0.596 | Val Acc: 0.555 | Gap: 0.041 | LR: 9.20e-05
+  Best saved (Val Acc: 0.5547)
+Epoch  30/150 | Loss: 0.6738 | Train Acc: 0.597 | Val Acc: 0.554 | Gap: 0.043 | LR: 9.14e-05
+Epoch  31/150 | Loss: 0.6730 | Train Acc: 0.599 | Val Acc: 0.559 | Gap: 0.040 | LR: 9.08e-05
+  Best saved (Val Acc: 0.5592)
+Epoch  32/150 | Loss: 0.6725 | Train Acc: 0.600 | Val Acc: 0.557 | Gap: 0.043 | LR: 9.03e-05
+Epoch  33/150 | Loss: 0.6720 | Train Acc: 0.601 | Val Acc: 0.559 | Gap: 0.042 | LR: 8.97e-05
+Epoch  34/150 | Loss: 0.6713 | Train Acc: 0.603 | Val Acc: 0.559 | Gap: 0.044 | LR: 8.91e-05
+Epoch  35/150 | Loss: 0.6709 | Train Acc: 0.603 | Val Acc: 0.556 | Gap: 0.048 | LR: 8.84e-05
+Epoch  36/150 | Loss: 0.6700 | Train Acc: 0.605 | Val Acc: 0.562 | Gap: 0.044 | LR: 8.78e-05
+  Best saved (Val Acc: 0.5616)
+Epoch  37/150 | Loss: 0.6696 | Train Acc: 0.607 | Val Acc: 0.559 | Gap: 0.048 | LR: 8.72e-05
+Epoch  38/150 | Loss: 0.6687 | Train Acc: 0.609 | Val Acc: 0.560 | Gap: 0.049 | LR: 8.65e-05
+Epoch  39/150 | Loss: 0.6684 | Train Acc: 0.610 | Val Acc: 0.559 | Gap: 0.051 | LR: 8.58e-05
+Epoch  40/150 | Loss: 0.6677 | Train Acc: 0.611 | Val Acc: 0.563 | Gap: 0.048 | LR: 8.51e-05
+  Best saved (Val Acc: 0.5629)
+Epoch  41/150 | Loss: 0.6673 | Train Acc: 0.611 | Val Acc: 0.563 | Gap: 0.048 | LR: 8.44e-05
+  Best saved (Val Acc: 0.5630)
+Epoch  42/150 | Loss: 0.6668 | Train Acc: 0.614 | Val Acc: 0.564 | Gap: 0.050 | LR: 8.37e-05
+  Best saved (Val Acc: 0.5636)
+Epoch  43/150 | Loss: 0.6662 | Train Acc: 0.613 | Val Acc: 0.565 | Gap: 0.048 | LR: 8.30e-05
+  Best saved (Val Acc: 0.5654)
+Epoch  44/150 | Loss: 0.6655 | Train Acc: 0.616 | Val Acc: 0.563 | Gap: 0.053 | LR: 8.22e-05
+Epoch  45/150 | Loss: 0.6647 | Train Acc: 0.618 | Val Acc: 0.562 | Gap: 0.056 | LR: 8.15e-05
+Epoch  46/150 | Loss: 0.6643 | Train Acc: 0.618 | Val Acc: 0.563 | Gap: 0.055 | LR: 8.07e-05
+Epoch  47/150 | Loss: 0.6641 | Train Acc: 0.618 | Val Acc: 0.562 | Gap: 0.056 | LR: 7.99e-05
+Epoch  48/150 | Loss: 0.6630 | Train Acc: 0.621 | Val Acc: 0.561 | Gap: 0.060 | LR: 7.91e-05
+Epoch  49/150 | Loss: 0.6624 | Train Acc: 0.622 | Val Acc: 0.564 | Gap: 0.058 | LR: 7.83e-05
+Epoch  50/150 | Loss: 0.6619 | Train Acc: 0.623 | Val Acc: 0.564 | Gap: 0.058 | LR: 7.75e-05
+Epoch  51/150 | Loss: 0.6613 | Train Acc: 0.625 | Val Acc: 0.566 | Gap: 0.058 | LR: 7.67e-05
+  Best saved (Val Acc: 0.5664)
+Epoch  52/150 | Loss: 0.6614 | Train Acc: 0.625 | Val Acc: 0.563 | Gap: 0.062 | LR: 7.58e-05
+Epoch  53/150 | Loss: 0.6604 | Train Acc: 0.626 | Val Acc: 0.567 | Gap: 0.058 | LR: 7.50e-05
+  Best saved (Val Acc: 0.5674)
+Epoch  54/150 | Loss: 0.6600 | Train Acc: 0.627 | Val Acc: 0.568 | Gap: 0.059 | LR: 7.42e-05
+  Best saved (Val Acc: 0.5675)
+Epoch  55/150 | Loss: 0.6597 | Train Acc: 0.628 | Val Acc: 0.569 | Gap: 0.059 | LR: 7.33e-05
+  Best saved (Val Acc: 0.5692)
+Epoch  56/150 | Loss: 0.6589 | Train Acc: 0.629 | Val Acc: 0.568 | Gap: 0.061 | LR: 7.24e-05
+Epoch  57/150 | Loss: 0.6584 | Train Acc: 0.631 | Val Acc: 0.570 | Gap: 0.061 | LR: 7.16e-05
+  Best saved (Val Acc: 0.5702)
+Epoch  58/150 | Loss: 0.6575 | Train Acc: 0.632 | Val Acc: 0.568 | Gap: 0.064 | LR: 7.07e-05
+Epoch  59/150 | Loss: 0.6579 | Train Acc: 0.631 | Val Acc: 0.568 | Gap: 0.063 | LR: 6.98e-05
+Epoch  60/150 | Loss: 0.6569 | Train Acc: 0.634 | Val Acc: 0.569 | Gap: 0.065 | LR: 6.89e-05
+Epoch  61/150 | Loss: 0.6566 | Train Acc: 0.633 | Val Acc: 0.568 | Gap: 0.065 | LR: 6.80e-05
+Epoch  62/150 | Loss: 0.6558 | Train Acc: 0.636 | Val Acc: 0.571 | Gap: 0.066 | LR: 6.71e-05
+  Best saved (Val Acc: 0.5706)
+Epoch  63/150 | Loss: 0.6556 | Train Acc: 0.637 | Val Acc: 0.567 | Gap: 0.070 | LR: 6.62e-05
+Epoch  64/150 | Loss: 0.6547 | Train Acc: 0.638 | Val Acc: 0.570 | Gap: 0.068 | LR: 6.53e-05
+Epoch  65/150 | Loss: 0.6549 | Train Acc: 0.638 | Val Acc: 0.571 | Gap: 0.067 | LR: 6.44e-05
+  Best saved (Val Acc: 0.5712)
+Epoch  66/150 | Loss: 0.6544 | Train Acc: 0.638 | Val Acc: 0.570 | Gap: 0.068 | LR: 6.34e-05
+Epoch  67/150 | Loss: 0.6543 | Train Acc: 0.638 | Val Acc: 0.571 | Gap: 0.067 | LR: 6.25e-05
+Epoch  68/150 | Loss: 0.6527 | Train Acc: 0.642 | Val Acc: 0.570 | Gap: 0.072 | LR: 6.16e-05
+Epoch  69/150 | Loss: 0.6538 | Train Acc: 0.640 | Val Acc: 0.572 | Gap: 0.068 | LR: 6.06e-05
+  Best saved (Val Acc: 0.5720)
+Epoch  70/150 | Loss: 0.6520 | Train Acc: 0.643 | Val Acc: 0.573 | Gap: 0.070 | LR: 5.97e-05
+  Best saved (Val Acc: 0.5725)
+Epoch  71/150 | Loss: 0.6517 | Train Acc: 0.643 | Val Acc: 0.571 | Gap: 0.072 | LR: 5.88e-05
+Epoch  72/150 | Loss: 0.6518 | Train Acc: 0.643 | Val Acc: 0.573 | Gap: 0.070 | LR: 5.78e-05
+  Best saved (Val Acc: 0.5729)
+Epoch  73/150 | Loss: 0.6505 | Train Acc: 0.646 | Val Acc: 0.572 | Gap: 0.074 | LR: 5.69e-05
+Epoch  74/150 | Loss: 0.6505 | Train Acc: 0.646 | Val Acc: 0.573 | Gap: 0.073 | LR: 5.59e-05
+  Best saved (Val Acc: 0.5731)
+Epoch  75/150 | Loss: 0.6503 | Train Acc: 0.646 | Val Acc: 0.575 | Gap: 0.072 | LR: 5.50e-05
+  Best saved (Val Acc: 0.5746)
+Epoch  76/150 | Loss: 0.6490 | Train Acc: 0.650 | Val Acc: 0.575 | Gap: 0.075 | LR: 5.41e-05
+  Best saved (Val Acc: 0.5750)
+Epoch  77/150 | Loss: 0.6493 | Train Acc: 0.648 | Val Acc: 0.571 | Gap: 0.077 | LR: 5.31e-05
+Epoch  78/150 | Loss: 0.6488 | Train Acc: 0.649 | Val Acc: 0.573 | Gap: 0.076 | LR: 5.22e-05
+Epoch  79/150 | Loss: 0.6482 | Train Acc: 0.651 | Val Acc: 0.573 | Gap: 0.078 | LR: 5.12e-05
+Epoch  80/150 | Loss: 0.6477 | Train Acc: 0.651 | Val Acc: 0.574 | Gap: 0.077 | LR: 5.03e-05
+Epoch  81/150 | Loss: 0.6477 | Train Acc: 0.651 | Val Acc: 0.575 | Gap: 0.076 | LR: 4.94e-05
+  Best saved (Val Acc: 0.5754)
+Epoch  82/150 | Loss: 0.6469 | Train Acc: 0.652 | Val Acc: 0.577 | Gap: 0.075 | LR: 4.84e-05
+  Best saved (Val Acc: 0.5774)
+Epoch  83/150 | Loss: 0.6465 | Train Acc: 0.653 | Val Acc: 0.577 | Gap: 0.076 | LR: 4.75e-05
+Epoch  84/150 | Loss: 0.6465 | Train Acc: 0.652 | Val Acc: 0.572 | Gap: 0.081 | LR: 4.66e-05
+Epoch  85/150 | Loss: 0.6462 | Train Acc: 0.652 | Val Acc: 0.575 | Gap: 0.077 | LR: 4.56e-05
+Epoch  86/150 | Loss: 0.6459 | Train Acc: 0.655 | Val Acc: 0.575 | Gap: 0.079 | LR: 4.47e-05
+Epoch  87/150 | Loss: 0.6455 | Train Acc: 0.653 | Val Acc: 0.576 | Gap: 0.078 | LR: 4.38e-05
+Epoch  88/150 | Loss: 0.6450 | Train Acc: 0.655 | Val Acc: 0.575 | Gap: 0.080 | LR: 4.29e-05
+Epoch  89/150 | Loss: 0.6445 | Train Acc: 0.656 | Val Acc: 0.576 | Gap: 0.081 | LR: 4.20e-05
+Epoch  90/150 | Loss: 0.6445 | Train Acc: 0.657 | Val Acc: 0.576 | Gap: 0.081 | LR: 4.11e-05
+Epoch  91/150 | Loss: 0.6438 | Train Acc: 0.658 | Val Acc: 0.575 | Gap: 0.083 | LR: 4.02e-05
+Epoch  92/150 | Loss: 0.6438 | Train Acc: 0.658 | Val Acc: 0.577 | Gap: 0.082 | LR: 3.93e-05
+Epoch  93/150 | Loss: 0.6430 | Train Acc: 0.658 | Val Acc: 0.576 | Gap: 0.082 | LR: 3.84e-05
+Epoch  94/150 | Loss: 0.6435 | Train Acc: 0.657 | Val Acc: 0.579 | Gap: 0.078 | LR: 3.76e-05
+  Best saved (Val Acc: 0.5786)
+Epoch  95/150 | Loss: 0.6426 | Train Acc: 0.660 | Val Acc: 0.576 | Gap: 0.085 | LR: 3.67e-05
+Epoch  96/150 | Loss: 0.6423 | Train Acc: 0.660 | Val Acc: 0.577 | Gap: 0.083 | LR: 3.58e-05
+Epoch  97/150 | Loss: 0.6421 | Train Acc: 0.660 | Val Acc: 0.579 | Gap: 0.082 | LR: 3.50e-05
+Epoch  98/150 | Loss: 0.6418 | Train Acc: 0.661 | Val Acc: 0.577 | Gap: 0.084 | LR: 3.42e-05
+Epoch  99/150 | Loss: 0.6415 | Train Acc: 0.661 | Val Acc: 0.579 | Gap: 0.082 | LR: 3.33e-05
+  Best saved (Val Acc: 0.5792)
+Epoch 100/150 | Loss: 0.6407 | Train Acc: 0.662 | Val Acc: 0.578 | Gap: 0.084 | LR: 3.25e-05
+Epoch 101/150 | Loss: 0.6406 | Train Acc: 0.662 | Val Acc: 0.578 | Gap: 0.084 | LR: 3.17e-05
+Epoch 102/150 | Loss: 0.6414 | Train Acc: 0.662 | Val Acc: 0.577 | Gap: 0.085 | LR: 3.09e-05
+Epoch 103/150 | Loss: 0.6400 | Train Acc: 0.664 | Val Acc: 0.577 | Gap: 0.086 | LR: 3.01e-05
+Epoch 104/150 | Loss: 0.6404 | Train Acc: 0.664 | Val Acc: 0.577 | Gap: 0.086 | LR: 2.93e-05
+Epoch 105/150 | Loss: 0.6393 | Train Acc: 0.666 | Val Acc: 0.578 | Gap: 0.088 | LR: 2.85e-05
+Epoch 106/150 | Loss: 0.6396 | Train Acc: 0.665 | Val Acc: 0.577 | Gap: 0.088 | LR: 2.78e-05
+Epoch 107/150 | Loss: 0.6385 | Train Acc: 0.666 | Val Acc: 0.577 | Gap: 0.089 | LR: 2.70e-05
+Epoch 108/150 | Loss: 0.6389 | Train Acc: 0.665 | Val Acc: 0.577 | Gap: 0.088 | LR: 2.63e-05
+Epoch 109/150 | Loss: 0.6381 | Train Acc: 0.668 | Val Acc: 0.579 | Gap: 0.089 | LR: 2.56e-05
+Epoch 110/150 | Loss: 0.6378 | Train Acc: 0.668 | Val Acc: 0.579 | Gap: 0.089 | LR: 2.49e-05
+Epoch 111/150 | Loss: 0.6384 | Train Acc: 0.667 | Val Acc: 0.579 | Gap: 0.089 | LR: 2.42e-05
+Epoch 112/150 | Loss: 0.6390 | Train Acc: 0.666 | Val Acc: 0.578 | Gap: 0.088 | LR: 2.35e-05
+Epoch 113/150 | Loss: 0.6375 | Train Acc: 0.667 | Val Acc: 0.580 | Gap: 0.087 | LR: 2.28e-05
+  Best saved (Val Acc: 0.5804)
+Epoch 114/150 | Loss: 0.6374 | Train Acc: 0.668 | Val Acc: 0.578 | Gap: 0.090 | LR: 2.22e-05
+Epoch 115/150 | Loss: 0.6372 | Train Acc: 0.669 | Val Acc: 0.580 | Gap: 0.089 | LR: 2.16e-05
+Epoch 116/150 | Loss: 0.6370 | Train Acc: 0.669 | Val Acc: 0.581 | Gap: 0.088 | LR: 2.09e-05
+  Best saved (Val Acc: 0.5805)
+Epoch 117/150 | Loss: 0.6362 | Train Acc: 0.670 | Val Acc: 0.579 | Gap: 0.091 | LR: 2.03e-05
+Epoch 118/150 | Loss: 0.6361 | Train Acc: 0.671 | Val Acc: 0.579 | Gap: 0.092 | LR: 1.97e-05
+Epoch 119/150 | Loss: 0.6368 | Train Acc: 0.669 | Val Acc: 0.580 | Gap: 0.089 | LR: 1.92e-05
+Epoch 120/150 | Loss: 0.6360 | Train Acc: 0.670 | Val Acc: 0.579 | Gap: 0.091 | LR: 1.86e-05
+Epoch 121/150 | Loss: 0.6354 | Train Acc: 0.672 | Val Acc: 0.579 | Gap: 0.093 | LR: 1.80e-05
+Epoch 122/150 | Loss: 0.6356 | Train Acc: 0.671 | Val Acc: 0.580 | Gap: 0.091 | LR: 1.75e-05
+Epoch 123/150 | Loss: 0.6353 | Train Acc: 0.671 | Val Acc: 0.578 | Gap: 0.093 | LR: 1.70e-05
+Epoch 124/150 | Loss: 0.6355 | Train Acc: 0.672 | Val Acc: 0.580 | Gap: 0.091 | LR: 1.65e-05
+Epoch 125/150 | Loss: 0.6346 | Train Acc: 0.673 | Val Acc: 0.579 | Gap: 0.093 | LR: 1.60e-05
+Epoch 126/150 | Loss: 0.6348 | Train Acc: 0.673 | Val Acc: 0.581 | Gap: 0.091 | LR: 1.56e-05
+  Best saved (Val Acc: 0.5811)
+Epoch 127/150 | Loss: 0.6347 | Train Acc: 0.674 | Val Acc: 0.581 | Gap: 0.093 | LR: 1.51e-05
+Epoch 128/150 | Loss: 0.6342 | Train Acc: 0.673 | Val Acc: 0.580 | Gap: 0.093 | LR: 1.47e-05
+Epoch 129/150 | Loss: 0.6341 | Train Acc: 0.674 | Val Acc: 0.580 | Gap: 0.094 | LR: 1.43e-05
+Epoch 130/150 | Loss: 0.6343 | Train Acc: 0.673 | Val Acc: 0.581 | Gap: 0.092 | LR: 1.39e-05
+Epoch 131/150 | Loss: 0.6336 | Train Acc: 0.674 | Val Acc: 0.579 | Gap: 0.094 | LR: 1.35e-05
+Epoch 132/150 | Loss: 0.6334 | Train Acc: 0.676 | Val Acc: 0.582 | Gap: 0.094 | LR: 1.32e-05
+  Best saved (Val Acc: 0.5820)
+Epoch 133/150 | Loss: 0.6335 | Train Acc: 0.675 | Val Acc: 0.582 | Gap: 0.093 | LR: 1.28e-05
+Epoch 134/150 | Loss: 0.6332 | Train Acc: 0.676 | Val Acc: 0.579 | Gap: 0.097 | LR: 1.25e-05
+Epoch 135/150 | Loss: 0.6342 | Train Acc: 0.673 | Val Acc: 0.583 | Gap: 0.091 | LR: 1.22e-05
+  Best saved (Val Acc: 0.5827)
+Epoch 136/150 | Loss: 0.6330 | Train Acc: 0.674 | Val Acc: 0.581 | Gap: 0.092 | LR: 1.19e-05
+Epoch 137/150 | Loss: 0.6328 | Train Acc: 0.675 | Val Acc: 0.582 | Gap: 0.092 | LR: 1.17e-05
+Epoch 138/150 | Loss: 0.6333 | Train Acc: 0.675 | Val Acc: 0.581 | Gap: 0.095 | LR: 1.14e-05
+Epoch 139/150 | Loss: 0.6328 | Train Acc: 0.675 | Val Acc: 0.582 | Gap: 0.093 | LR: 1.12e-05
+Epoch 140/150 | Loss: 0.6329 | Train Acc: 0.675 | Val Acc: 0.583 | Gap: 0.093 | LR: 1.10e-05
+Epoch 141/150 | Loss: 0.6324 | Train Acc: 0.676 | Val Acc: 0.582 | Gap: 0.094 | LR: 1.08e-05
+Epoch 142/150 | Loss: 0.6326 | Train Acc: 0.676 | Val Acc: 0.580 | Gap: 0.096 | LR: 1.06e-05
+Epoch 143/150 | Loss: 0.6330 | Train Acc: 0.675 | Val Acc: 0.582 | Gap: 0.093 | LR: 1.05e-05
+Epoch 144/150 | Loss: 0.6320 | Train Acc: 0.677 | Val Acc: 0.581 | Gap: 0.095 | LR: 1.04e-05
+Epoch 145/150 | Loss: 0.6325 | Train Acc: 0.676 | Val Acc: 0.582 | Gap: 0.094 | LR: 1.02e-05
+Epoch 146/150 | Loss: 0.6324 | Train Acc: 0.676 | Val Acc: 0.581 | Gap: 0.094 | LR: 1.02e-05
+Epoch 147/150 | Loss: 0.6318 | Train Acc: 0.678 | Val Acc: 0.581 | Gap: 0.097 | LR: 1.01e-05
+Epoch 148/150 | Loss: 0.6324 | Train Acc: 0.677 | Val Acc: 0.581 | Gap: 0.095 | LR: 1.00e-05
+Epoch 149/150 | Loss: 0.6322 | Train Acc: 0.678 | Val Acc: 0.580 | Gap: 0.098 | LR: 1.00e-05
+Epoch 150/150 | Loss: 0.6312 | Train Acc: 0.678 | Val Acc: 0.581 | Gap: 0.097 | LR: 1.00e-05

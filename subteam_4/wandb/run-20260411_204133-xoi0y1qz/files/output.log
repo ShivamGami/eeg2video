@@ -1,0 +1,22 @@
+📊 DATASET LOADED | Mode: TRAIN | Samples: 203742
+📊 DATASET LOADED | Mode: VAL | Samples: 43659
+🔍 Label sanity | mean=0.478 std=0.500 unique=[0.0, 1.0]
+Epoch   1 | Loss: 0.6958 | Acc: 0.498 | Val Acc: 0.501 | LR: 1.00e-04
+  🌟 Best model saved! (Val Acc: 0.5006)
+Epoch   2 | Loss: 0.6938 | Acc: 0.498 | Val Acc: 0.499 | LR: 1.00e-04
+Epoch   3 | Loss: 0.6935 | Acc: 0.503 | Val Acc: 0.499 | LR: 1.00e-04
+Epoch   4 | Loss: 0.6935 | Acc: 0.500 | Val Acc: 0.501 | LR: 1.00e-04
+Epoch   5 | Loss: 0.6934 | Acc: 0.500 | Val Acc: 0.501 | LR: 1.00e-04
+Epoch   6 | Loss: 0.6934 | Acc: 0.498 | Val Acc: 0.501 | LR: 1.00e-04
+Epoch   7 | Loss: 0.6933 | Acc: 0.499 | Val Acc: 0.501 | LR: 1.00e-04
+Epoch   8 | Loss: 0.6932 | Acc: 0.502 | Val Acc: 0.501 | LR: 1.00e-04
+Epoch   9 | Loss: 0.6933 | Acc: 0.498 | Val Acc: 0.499 | LR: 1.00e-04
+Epoch  10 | Loss: 0.6932 | Acc: 0.501 | Val Acc: 0.499 | LR: 1.00e-04
+Epoch  11 | Loss: 0.6932 | Acc: 0.502 | Val Acc: 0.499 | LR: 5.00e-05
+Epoch  12 | Loss: 0.6932 | Acc: 0.500 | Val Acc: 0.501 | LR: 5.00e-05
+Epoch  13 | Loss: 0.6932 | Acc: 0.501 | Val Acc: 0.501 | LR: 5.00e-05
+Epoch  14 | Loss: 0.6932 | Acc: 0.500 | Val Acc: 0.501 | LR: 5.00e-05
+Epoch  15 | Loss: 0.6932 | Acc: 0.502 | Val Acc: 0.501 | LR: 5.00e-05
+Epoch  16 | Loss: 0.6932 | Acc: 0.500 | Val Acc: 0.499 | LR: 5.00e-05
+
+⏹️  Early stopping triggered at epoch 16 (no improvement for 15 epochs)
