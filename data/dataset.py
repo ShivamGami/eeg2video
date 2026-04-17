@@ -19,6 +19,7 @@
 
 import os
 import torch
+import numpy as np
 from torch.utils.data import Dataset, DataLoader
 
 
@@ -74,29 +75,37 @@ class EEGVideoDataset(Dataset):
         if not os.path.exists(split_file):
             raise FileNotFoundError(
                 f"\n❌ Split file not found: {split_file}"
-                f"\n   Make sure preprocess_full.py has been run first!"
-                f"\n   Expected location: {data_dir}/{split}_split.txt"
+                f"\n   Make sure you have generated NEW split files after the cleanup!"
             )
 
         with open(split_file) as f:
             self.sample_ids = [
-                line.strip()
-                for line in f
+                line.strip().replace("sample_", "") # Clean 'sample_000001' to '000001'
+                for line in f 
                 if line.strip()
             ]
 
-        if len(self.sample_ids) == 0:
-            raise ValueError(
-                f"❌ Split file is empty: {split_file}"
-            )
+        # ── Step 2: Load Fixed Dynamics Labels ──────────────────
+        labels_path = os.path.join(data_dir, "dynamics_labels_fixed.npy")
+        if os.path.exists(labels_path):
+            # Load as memory-mapped for speed (doesn't clog RAM)
+            self.dynamics_labels = np.load(labels_path, mmap_mode='r')
+            print(f"✅ Loaded {len(self.dynamics_labels)} dynamics labels")
+        else:
+            self.dynamics_labels = None
+            print("⚠️ WARNING: dynamics_labels_fixed.npy not found. Labels will be -1.")
 
-        # ── Step 2: Verify sample files exist ──────────────────
+        if len(self.sample_ids) == 0:
+            raise ValueError(f"❌ Split file is empty: {split_file}")
+
+        # ── Step 3: Verify sample files exist ──────────────────
         self._verify_samples()
 
         print(
             f"✅ EEGVideoDataset [{split:5s}]: "
             f"{len(self.sample_ids):>8,} samples loaded"
         )
+
 
     def _verify_samples(self):
         """
@@ -131,93 +140,44 @@ class EEGVideoDataset(Dataset):
 
     def __getitem__(self, idx):
         """
-        Load and return one matched triplet.
-
-        Args:
-            idx : int  index into sample list
-
-        Returns:
-            dict with keys:
-                eeg       : FloatTensor (62, 51, 9)
-                text      : FloatTensor (512,)
-                video     : FloatTensor (6, 4, 16, 16)
-                sample_id : str
+        Load and return one matched triplet + fixed dynamics label.
         """
         sid = self.sample_ids[idx]
 
         # ── Build file paths ────────────────────────────────────
-        eeg_path   = os.path.join(
-            self.data_dir, f"eeg_sample_{sid}.pt"
-        )
-        text_path  = os.path.join(
-            self.data_dir, f"text_sample_{sid}.pt"
-        )
-        video_path = os.path.join(
-            self.data_dir, f"video_sample_{sid}.pt"
-        )
+        eeg_path   = os.path.join(self.data_dir, f"eeg_sample_{sid}.pt")
+        text_path  = os.path.join(self.data_dir, f"text_sample_{sid}.pt")
+        video_path = os.path.join(self.data_dir, f"video_sample_{sid}.pt")
 
         # ── Load tensors from disk ──────────────────────────────
         try:
-            eeg = torch.load(
-                eeg_path,
-                map_location = "cpu",
-                weights_only = True
-            )
+            # Use weights_only for security and cpu mapping for initial load
+            eeg   = torch.load(eeg_path, map_location="cpu", weights_only=True).float()
+            text  = torch.load(text_path, map_location="cpu", weights_only=True).float()
+            video = torch.load(video_path, map_location="cpu", weights_only=True).float()
         except Exception as e:
-            raise RuntimeError(f"Failed to load EEG {sid}: {e}")
+            raise RuntimeError(f"❌ Failed to load sample {sid}: {e}")
 
+        # ── Map Dynamics Label ──────────────────────────────────
+        # Convert '000001' (1-based filename) to 0 (0-based index)
         try:
-            text = torch.load(
-                text_path,
-                map_location = "cpu",
-                weights_only = True
-            )
-        except Exception as e:
-            raise RuntimeError(f"Failed to load text {sid}: {e}")
+            label_idx = int(sid) - 1 
+            if self.dynamics_labels is not None:
+                # Get the label (0 for Slow, 1 for Fast)
+                dyn_label = self.dynamics_labels[label_idx]
+            else:
+                dyn_label = -1
+        except Exception:
+            dyn_label = -1
 
-        try:
-            video = torch.load(
-                video_path,
-                map_location = "cpu",
-                weights_only = True
-            )
-        except Exception as e:
-            raise RuntimeError(f"Failed to load video {sid}: {e}")
-
-        # ── Shape verification ──────────────────────────────────
-        if eeg.shape != torch.Size(list(self.EEG_SHAPE)):
-            raise ValueError(
-                f"EEG shape mismatch for {sid}: "
-                f"got {tuple(eeg.shape)}, "
-                f"expected {self.EEG_SHAPE}"
-            )
-
-        if text.shape != torch.Size(list(self.TEXT_SHAPE)):
-            raise ValueError(
-                f"Text shape mismatch for {sid}: "
-                f"got {tuple(text.shape)}, "
-                f"expected {self.TEXT_SHAPE}"
-            )
-
-        if video.shape != torch.Size(list(self.VIDEO_SHAPE)):
-            raise ValueError(
-                f"Video shape mismatch for {sid}: "
-                f"got {tuple(video.shape)}, "
-                f"expected {self.VIDEO_SHAPE}"
-            )
-
-        # ── Ensure correct dtype ────────────────────────────────
-        eeg   = eeg.float()
-        text  = text.float()
-        video = video.float()
-
+        # ── Return Dictionary ───────────────────────────────────
         return {
-            "eeg"       : eeg,       # (62, 51, 9)
-            "text"      : text,      # (512,)
-            "video"     : video,     # (6, 4, 16, 16)
-            "sample_id" : sid,       # "000001"
+            "eeg"       : eeg,                               # (62, 51, 9)
+            "text"      : text,                              # (512,)
+            "video"     : video,                             # (6, 4, 16, 16)
+            "dynamics"  : torch.tensor(dyn_label, dtype=torch.long), # Ground Truth
+            "sample_id" : sid,                               # "000001"
         }
-
 
 # ═══════════════════════════════════════════════════════════════
 # SECTION 2: DATALOADER FACTORY
