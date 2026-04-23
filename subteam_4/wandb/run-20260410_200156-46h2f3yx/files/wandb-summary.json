@@ -1,1 +1,0 @@
-{"loss":0.6797271081850157,"_timestamp":1.7758341229864607e+09,"_step":49,"epoch":50,"val_loss":0.6804218174413194,"_wandb":{"runtime":2605},"_runtime":2605,"phase":"finetune"}

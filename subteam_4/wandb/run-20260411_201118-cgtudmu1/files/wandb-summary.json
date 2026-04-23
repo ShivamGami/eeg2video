@@ -1,1 +1,0 @@
-{"_step":40,"cos_weight":0.190625,"epoch":41,"_runtime":1806,"lr":1.5e-05,"_timestamp":1.7759202867164547e+09,"_wandb":{"runtime":1806},"phase":"finetune","loss":0.7579086780847617,"val_loss":0.7572041913779856}
