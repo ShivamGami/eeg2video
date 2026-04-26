@@ -1,3 +1,4 @@
+
 *.npy
 *.pt
 *.pth
@@ -6,5 +7,10 @@ __pycache__/
 .env
 wandb/
 .DS_Store
-subteam3_vit/checkpoints/*
-!subteam3_vit/checkpoints/.gitkeep
+/groundtruth
+/outputs
+
+# evaluation/eval_results/
+/configs
+
+*.bin
