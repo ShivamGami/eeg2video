@@ -1,0 +1,16 @@
+
+*.npy
+*.pt
+*.pth
+__pycache__/
+*.pyc
+.env
+wandb/
+.DS_Store
+/groundtruth
+/outputs
+
+# evaluation/eval_results/
+/configs
+
+*.bin
