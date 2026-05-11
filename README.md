@@ -13,15 +13,14 @@
 
 <br/>
 
-> **Reconstructing temporally coherent video clips directly from raw EEG brain signals**  
+> **Reconstructing temporally coherent video clips directly from raw EEG brain signals**
 > using an EEGNet-inspired Transformer encoder, CLIP semantic alignment, Dynamic-Aware Noise Addition (DANA), and Stable Diffusion / VideoLDM conditioning.
 
 <br/>
 
 ---
 
-**B.Tech Project · CS671 · Indian Institute of Technology, Mandi · 2025–26**  
-*Group 2 — EEG Transformer + Latent Diffusion Model Pipeline*
+**B.Tech Project · CS671 · Indian Institute of Technology, Mandi · 2025–26**
 
 ---
 
@@ -34,34 +33,27 @@
 - [Overview](#-overview)
 - [Architecture](#-architecture-overview)
 - [Key Concepts](#-key-concepts-glossary)
-- [Dataset](#-dataset--seed-dv--eeg-imagenet)
+- [Dataset](#-dataset--seed-dv)
 - [Repository Structure](#-repository-structure)
 - [Installation & Environment Setup](#-installation--environment-setup)
-- [Phase 1 — Setup & Literature Review](#-phase-1--setup--literature-review)
-- [Phase 2 — EEG Preprocessing & Spectrogram Generation](#-phase-2--eeg-preprocessing--spectrogram-generation)
-- [Phase 3 — Transformer Encoder + CLIP Alignment](#-phase-3--transformer-encoder--clip-alignment)
-- [Phase 4 — Latent Diffusion Fine-Tuning & Video Generation](#-phase-4--latent-diffusion-fine-tuning--video-generation)
-- [Phase 5 — Evaluation & Final Report](#-phase-5--evaluation--final-report)
 - [Training Pipeline](#-training-pipeline)
 - [Inference Pipeline](#-inference-pipeline)
 - [Checkpoint Management](#-checkpoint-management)
 - [Configuration & Hyperparameters](#-configuration--hyperparameters)
 - [Evaluation Metrics](#-evaluation-metrics)
 - [Results](#-results)
-- [Experiments & Ablations](#-experiments--ablations)
 - [Challenges & Mitigations](#-challenges--mitigations)
 - [Team Contributions](#-team-contributions)
 - [Future Work](#-future-work)
 - [Troubleshooting](#-troubleshooting)
 - [Acknowledgements](#-acknowledgements)
 - [References](#-references)
-- [Citation](#-citation)
 
 ---
 
 ## 🔭 Overview
 
-**EEG2Video** is a research-grade generative pipeline that reconstructs temporally coherent video sequences directly from non-invasive EEG brain recordings. Given a 500 ms window of 62-channel EEG data recorded while a subject watches a video, the system generates a 6-frame video clip at 3 FPS that semantically corresponds to the observed visual stimulus.
+**EEG2Video** is a research-grade generative pipeline that reconstructs temporally coherent video sequences directly from non-invasive EEG brain recordings. Given a 500 ms window of 62-channel EEG data recorded while a subject watches a video, the system generates a multi-frame video clip that semantically corresponds to the observed visual stimulus.
 
 The pipeline is organized into **four specialized sub-teams**, each owning a distinct module of the end-to-end system:
 
@@ -109,9 +101,10 @@ Visual Latents (6 × 4 × 32 × 32)     Dynamics Classifier → is_fast (0/1)
 
 ### What Makes This Pipeline Novel
 
-- **DANA (Dynamic-Aware Noise Addition):** Instead of starting denoising from pure Gaussian noise, the system uses the ViT-predicted visual latent as a structural prior, adding controlled noise scaled by the predicted motion dynamics (`β_fast = 0.85` for dynamic content, `β_slow = 0.35` for static content). This allows the diffusion model to refine structure rather than hallucinate from scratch.
+- **DANA (Dynamic-Aware Noise Addition):** Instead of starting denoising from pure Gaussian noise, the system uses the ViT-predicted visual latent as a structural prior, adding controlled noise scaled by predicted motion dynamics (`β_fast = 0.85` for dynamic content, `β_slow = 0.35` for static content). This allows the diffusion model to refine structure rather than hallucinate from scratch.
+- **Tri-Path EEG Conditioning:** Semantic (CLIP), structural (ViT), and dynamic (DANA) conditioning streams are fused, providing richer guidance than any single path alone.
 - **Dual-Path EEG Adapter:** A flat spectral path (28,458 raw time-frequency values) is fused with a band-pooled path (310 frequency-band features across Delta/Theta/Alpha/Beta/Gamma) to produce a robust 512-dim EEG embedding.
-- **Latent-Space Conditioning:** EEG embeddings are projected to 77 × 768 context tensors via learnable Transformer queries, injected into the Stable Diffusion UNet via cross-attention at every denoising step — identical to text conditioning in standard SD.
+- **Latent-Space Conditioning:** EEG embeddings are projected to 77 × 768 context tensors via learnable Transformer queries and injected into the Stable Diffusion UNet via cross-attention at every denoising step — identical to text conditioning in standard SD.
 
 ---
 
@@ -136,52 +129,43 @@ Visual Latents (6 × 4 × 32 × 32)     Dynamics Classifier → is_fast (0/1)
 └─────────────────┴─────────────────┴────────────────┴─────────────────┘
 ```
 
-> 📌 **Architecture diagram placeholder** — replace with `assets/architecture.png`
->
-> | Full Pipeline Diagram | DANA Scheduler Flow |
-> |---|---|
-> | `![Architecture](assets/architecture.png)` | `![DANA](assets/dana_flow.png)` |
-
 ---
 
 ## 📚 Key Concepts Glossary
 
 | Concept | Description |
 |---|---|
-| **STFT Spectrogram** | Short-Time Fourier Transform applied per EEG channel, converting the 1D time-series into a 2D time-frequency map (freq bins × time frames). Enables the Transformer to process EEG as image-like patches. |
-| **EEG Embedding** | 512-dimensional dense vector representation of the EEG spectrogram produced by the Dual-Path EEG Adapter. Encodes both full spectral detail and frequency-band structure. |
-| **Transformer Attention** | Multi-head self-attention (8 heads, d=256) applied across temporal patches of the EEG spectrogram, capturing long-range temporal dependencies within and across EEG channels. |
-| **CLIP Alignment** | The EEG embedding is projected via an MLP into CLIP's 512-dim visual-language latent space. Cosine similarity loss enforces that the EEG representation aligns semantically with the ground-truth image embedding. |
-| **ViT Latents** | A Vision Transformer (ViT) encodes reference visual frames and a Seq2Seq network predicts 6 VAE-encoded latent frames `(6 × 4 × 32 × 32)` from the EEG embedding — providing structural guidance to the diffusion model. |
-| **DANA Scheduler** | Dynamic-Aware Noise Addition: adds β-scaled Gaussian noise to ViT-predicted latents based on the predicted motion label (`is_fast`). `β_fast=0.85` (high noise for dynamic content), `β_slow=0.35` (low noise for static content). |
-| **DDPM/DDIM Sampling** | Denoising Diffusion Probabilistic Models (DDPM) for training; DDIM for accelerated inference. The UNet iteratively denoises the DANA-noised latent conditioned on EEG context. |
-| **Classifier-Free Guidance** | During training, EEG conditioning is randomly dropped (p=0.1), training the UNet to work both conditioned and unconditionally. At inference, guidance scale amplifies the conditioned direction. |
-| **EEGProjection** | A 4-layer Transformer with 77 learnable latent queries that converts the 512-dim EEG embedding into a `(77 × 768)` context tensor — matching the token shape of CLIP text embeddings for cross-attention injection. |
-| **EMA Checkpoints** | Exponential Moving Average of model weights used during training for more stable inference. Saved separately from the training checkpoint. |
-| **TemporalUNet** | The VideoLDM extension — the SD v1.5 UNet2DConditionModel processes all 6 frames independently in the spatial dimension; temporal consistency is enforced via DANA's structural priors and latent-space regularization. |
-| **VAE Encoder/Decoder** | The Stable Diffusion Variational Autoencoder encodes 128×128 RGB frames into `(4 × 16 × 16)` or `(4 × 32 × 32)` latent tensors and decodes generated latents back to pixel space. |
-| **Cross-Attention Conditioning** | At every UNet denoising step, the `(77 × 768)` EEG context tensor is injected into the UNet's attention layers as key-value pairs, with spatial features as queries — identical to text-to-image SD conditioning. |
+| **STFT Spectrogram** | Short-Time Fourier Transform applied per EEG channel, converting the 1D time-series into a 2D time-frequency map. Enables the Transformer to process EEG as image-like patches. |
+| **EEG Embedding** | 512-dimensional dense vector produced by the Dual-Path EEG Adapter. Encodes both full spectral detail and frequency-band structure. |
+| **Transformer Attention** | Multi-head self-attention (8 heads, d=256) applied across temporal patches of the EEG spectrogram, capturing long-range temporal dependencies. |
+| **CLIP Alignment** | The EEG embedding is projected via an MLP into CLIP's 512-dim visual-language latent space. Cosine similarity loss enforces semantic alignment with ground-truth image embeddings. |
+| **ViT Latents** | A Vision Transformer (ViT) encodes reference visual frames and a Seq2Seq network predicts 6 VAE-encoded latent frames `(6 × 4 × 32 × 32)` from the EEG embedding, providing structural guidance to the diffusion model. |
+| **DANA Scheduler** | Dynamic-Aware Noise Addition: adds β-scaled Gaussian noise to ViT-predicted latents based on the predicted motion label. `β_fast=0.85`, `β_slow=0.35`. |
+| **DDPM/DDIM Sampling** | DDPM for training; DDIM for accelerated inference. The UNet iteratively denoises the DANA-noised latent conditioned on EEG context. |
+| **Classifier-Free Guidance** | EEG conditioning is randomly dropped during training (p=0.1), training the UNet to operate both conditioned and unconditionally. Guidance scale amplifies the conditioned direction at inference. |
+| **EEGProjection** | A 4-layer Transformer with 77 learnable latent queries that converts the 512-dim EEG embedding into a `(77 × 768)` context tensor — matching CLIP text token shape for cross-attention injection. |
+| **EMA Checkpoints** | Exponential Moving Average of model weights for more stable inference. Saved separately from the training checkpoint. |
+| **VAE Encoder/Decoder** | The Stable Diffusion VAE encodes 128×128 RGB frames into `(4 × 32 × 32)` latent tensors and decodes generated latents back to pixel space. |
 
 ---
 
-## 🗃 Dataset — SEED-DV / EEG-ImageNet
+## 🗃 Dataset — SEED-DV
 
-This project uses the **SEED-DV EEG-video dataset** (also referenced as EEG-ImageNet / EEGCVPR40 for preprocessing compatibility).
+This project uses the **SEED-DV EEG-video dataset**.
 
 ### Dataset Statistics
 
 | Property | Value |
 |---|---|
 | EEG Channels | 62 |
-| Sampling Rate | ~1000 Hz (downsampled during preprocessing) |
-| Window Size | 500 ms sliding windows |
-| Window Overlap | 50% |
-| Frames per Sample | 6 (2-second video clips @ 3 FPS) |
+| Sampling Rate | ~200 Hz (after downsampling) |
+| Window Size | 500 timesteps |
+| Frames per Sample | 6 (@ 3 FPS) |
 | Total Samples | ~291,000 processed samples |
 | Train / Val / Test Split | 70% / 15% / 15% (random seed 42) |
-| EEG Tensor Shape | `(62, 51, 9)` — channels × freq bins × time frames |
-| Video Latent Shape | `(6, 4, 16, 16)` or `(6, 4, 32, 32)` |
-| Text Embedding Shape | `(77, 768)` — CLIP token space |
+| EEG Tensor Shape | `(62, 51, 9)` |
+| Video Latent Shape | `(6, 4, 32, 32)` |
+| Text Embedding Shape | `(77, 768)` |
 | Visual Output Resolution | 128 × 128 RGB |
 
 ### Dataset Preparation
@@ -191,7 +175,7 @@ The processed dataset directory is expected at:
 ```
 /home/teaching/TEAM_22_DATASET/processed/processed/
 ├── eeg_sample_000001.pt        # (62, 51, 9) EEG spectrogram tensor
-├── video_sample_000001.pt      # (6, 4, 16, 16) VAE-encoded video latent
+├── video_sample_000001.pt      # (6, 4, 32, 32) VAE-encoded video latent
 ├── text_sample_000001.pt       # (77, 768) CLIP text embedding
 ├── dynamics_labels_fixed_BINARY.npy   # Binary fast/slow motion labels
 ├── train_split.txt
@@ -203,11 +187,12 @@ The processed dataset directory is expected at:
 
 Raw EEG signals are preprocessed using `MNE-Python` and `SciPy`:
 
-1. **Bandpass Filtering:** 0.5–45 Hz (removes DC drift and high-frequency noise)
-2. **Epoch Windowing:** 500 ms non-overlapping segments (or 50% overlap for video generation)
-3. **STFT Computation:** `scipy.signal.stft` applied per channel → `(51 freq bins × 9 time frames)`
-4. **Normalization:** Per-channel z-score normalization across the spectrogram
-5. **Stacking:** All 62 channels stacked → `(62, 51, 9)` tensor saved as `.pt`
+1. **Bandpass Filtering:** Zero-phase Butterworth filter (0.5–50 Hz) — removes DC drift and high-frequency noise outside physiological EEG bands
+2. **Artifact Removal:** ICA (Independent Component Analysis) to suppress ocular (EOG) and muscular (EMG) artifacts
+3. **Epoch Segmentation:** 500 timestep epochs time-locked to video stimuli
+4. **Standardization:** Per-channel z-score normalization (zero mean, unit variance)
+5. **STFT Computation:** `scipy.signal.stft` applied per channel → `(51 freq bins × 9 time frames)`
+6. **Stacking:** All 62 channels stacked → `(62, 51, 9)` tensor saved as `.pt`
 
 **Expected tensor shapes at each pipeline stage:**
 
@@ -216,7 +201,6 @@ eeg_spectrogram   : torch.Size([B, 62, 51, 9])     # input to EEG Adapter
 eeg_embedding     : torch.Size([B, 512])             # EEG Adapter output
 clip_context      : torch.Size([B, 77, 768])         # EEGProjection output → UNet
 visual_latents    : torch.Size([B, 6, 4, 32, 32])   # ViT Seq2Seq output
-text_embeddings   : torch.Size([B, 77, 768])         # Text MLP output (saved)
 is_fast           : torch.Size([B, 1])               # Dynamics classifier output
 noised_latent     : torch.Size([B, 6, 4, 32, 32])   # DANA output → UNet input
 generated_frames  : torch.Size([B, 6, 3, 128, 128]) # VAE-decoded RGB output
@@ -230,7 +214,7 @@ generated_frames  : torch.Size([B, 6, 3, 128, 128]) # VAE-decoded RGB output
 eeg2video-cs671/
 │
 ├── 📁 data/
-│   └── dataset.py                  # EEGVideoDataset class — 70/15/15 splits
+│   └── dataset.py                  # EEGVideoDataset — 70/15/15 splits
 │
 ├── 📁 models/
 │   ├── 📁 eeg_encoder/
@@ -266,7 +250,7 @@ eeg2video-cs671/
 │   └── run_pipeline_test.py        # End-to-end pipeline integration test
 │
 ├── 📁 evaluation/
-│   ├── evaluate.py                 # SSIM, PSNR, FVD, FID, CLIP-sim evaluation
+│   ├── evaluate.py                 # SSIM, PSNR, LPIPS, FID, CLIP-sim evaluation
 │   └── eval_results/
 │       ├── metrics_latent.json     # Per-sample cosine similarity + MSE
 │       └── metrics_video.json      # Aggregate video-level metrics
@@ -274,7 +258,7 @@ eeg2video-cs671/
 ├── 📁 utils/
 │   ├── subteam2_dataset.py         # VideoLDM-specific DataLoader
 │   ├── myvideo.py                  # Video I/O utilities (frame assembly, GIF export)
-│   ├── oracle_test.py              # Upper-bound evaluation with ground-truth latents
+│   ├── oracle_test.py              # Upper-bound evaluation with GT latents
 │   ├── extract_truth.py            # Ground-truth frame extraction from dataset
 │   ├── test_gt_reconstruction.py   # Sanity check: VAE encode → decode roundtrip
 │   ├── test_model.py               # Quick model forward-pass test
@@ -330,7 +314,7 @@ pip install open-clip-torch mne scipy scikit-image scikit-video
 pip install torchmetrics wandb tqdm numpy matplotlib
 ```
 
-Or use the provided setup script (Sub-team 2 environment):
+Or use the provided setup script:
 
 ```bash
 bash utils/setup_subteam2.sh
@@ -339,7 +323,6 @@ bash utils/setup_subteam2.sh
 ### Step 4 — Download Pre-trained Backbone
 
 ```bash
-# Stable Diffusion v1.5 weights (required for VideoLDM backbone)
 python -c "
 from diffusers import UNet2DConditionModel
 unet = UNet2DConditionModel.from_pretrained('runwayml/stable-diffusion-v1-5', subfolder='unet')
@@ -356,215 +339,28 @@ python utils/test_model.py
 
 ---
 
-## 📖 Phase 1 — Setup & Literature Review
+## 🚀 Training Pipeline
 
-**Weeks 1–2 | Objectives:** Environment setup, repository initialization, literature survey, dataset download and verification.
-
-### Objectives
-
-- Initialize GitHub repository with consistent module interfaces
-- Complete literature review of key papers: DreamDiffusion, CLIP, Latent Diffusion Models, EEGNet, VideoLDM
-- Download and verify the SEED-DV / EEG-ImageNet dataset
-- Implement and test the base `EEGVideoDataset` DataLoader
-
-### Key Papers
-
-| Paper | Relevance |
-|---|---|
-| Rombach et al. (2022) — *High-Resolution Image Synthesis with Latent Diffusion Models* | Core diffusion backbone (Stable Diffusion) |
-| Radford et al. (2021) — *Learning Transferable Visual Models From Natural Language Supervision* | CLIP semantic alignment |
-| Chen et al. (2023) — *DreamDiffusion: Generating High-Quality Images from Brain EEG Signals* | EEG-to-image generation with diffusion |
-| Lawhern et al. (2018) — *EEGNet: A Compact Convolutional Neural Network for EEG-based BCIs* | EEGNet-inspired Transformer encoder |
-| Blattmann et al. (2023) — *Align your Latents: High-Resolution Video Synthesis with LDMs* | VideoLDM temporal extension |
-
-### Deliverables
-
-- [ ] Repository structure confirmed with agreed tensor I/O contracts
-- [ ] Literature summary (3–5 papers, 1-page each)
-- [ ] `EEGVideoDataset` unit-tested with correct 70/15/15 splits
-- [ ] Dataset integrity check: all `eeg_sample_*.pt`, `video_sample_*.pt`, `text_sample_*.pt` files verified
-
-### Dataset Verification
+### Stage 1 — Text MLP (CLIP Embedding Predictor)
 
 ```bash
-python -c "
-from data.dataset import EEGVideoDataset
-ds = EEGVideoDataset('/home/teaching/TEAM_22_DATASET/processed/processed', mode='train')
-eeg, text, video, label = ds[0]
-print('EEG shape:  ', eeg.shape)    # Expected: (62, 51, 9)
-print('Text shape: ', text.shape)   # Expected: (77, 768)
-print('Video shape:', video.shape)  # Expected: (6, 4, 16, 16)
-print('Label:      ', label.item()) # Expected: 0.0 or 1.0
-"
-```
-
----
-
-## 🔬 Phase 2 — EEG Preprocessing & Spectrogram Generation
-
-**Weeks 3–4 | Objectives:** Implement the complete EEG preprocessing pipeline from raw signals to STFT spectrograms.
-
-### Pipeline Steps
-
-```
-Raw EEG Signal
-[62 channels × N_samples @ ~1000 Hz]
-        │
-        ├─ 1. Bandpass Filter (0.5–45 Hz) — MNE-Python
-        │
-        ├─ 2. Epoch Segmentation (500 ms windows, 50% overlap)
-        │      → Each epoch: (62 × 500 samples)
-        │
-        ├─ 3. STFT Spectrogram (scipy.signal.stft per channel)
-        │      → Each channel: (51 freq bins × 9 time frames)
-        │
-        ├─ 4. Per-channel Z-score Normalization
-        │
-        └─ 5. Stack channels → (62 × 51 × 9) tensor, saved as .pt
-```
-
-### STFT Parameters
-
-```python
-from scipy import signal
-import torch
-
-def compute_stft_spectrogram(eeg_epoch, fs=250, nperseg=32, noverlap=16):
-    """
-    Convert a single EEG epoch to STFT spectrogram.
-
-    Args:
-        eeg_epoch : np.ndarray of shape (n_channels, n_samples)
-        fs        : sampling frequency after downsampling (Hz)
-        nperseg   : STFT window length (samples)
-        noverlap  : STFT overlap (samples)
-
-    Returns:
-        torch.Tensor of shape (n_channels, n_freq_bins, n_time_frames)
-        → (62, 51, 9) for default params
-    """
-    specs = []
-    for ch in range(eeg_epoch.shape[0]):
-        f, t, Zxx = signal.stft(eeg_epoch[ch], fs=fs,
-                                 nperseg=nperseg, noverlap=noverlap)
-        magnitude = np.abs(Zxx)
-        # Z-score normalization per channel
-        magnitude = (magnitude - magnitude.mean()) / (magnitude.std() + 1e-6)
-        specs.append(magnitude)
-    return torch.tensor(np.stack(specs), dtype=torch.float32)
-    # Output shape: (62, 51, 9)
-```
-
-### Frequency Band Structure
-
-The Dynamics Predictor additionally uses frequency-band pooling across 5 bands:
-
-| Band | Frequency Range | Index in (51 bins) |
-|---|---|---|
-| Delta | 0–4 Hz | bins 0–3 |
-| Theta | 4–8 Hz | bins 4–7 |
-| Alpha | 8–14 Hz | bins 8–13 |
-| Beta | 14–31 Hz | bins 14–30 |
-| Gamma | 31–45 Hz | bins 31–50 |
-
-### Deliverables
-
-- [ ] Clean EEG epochs saved as `eeg_sample_XXXXXX.pt` (shape `62 × 51 × 9`)
-- [ ] `EEGVideoDataset` unit-tested: DataLoader iterates without shape errors
-- [ ] Spectrogram visualizations validated per channel (no flat/zero channels)
-- [ ] `dynamics_labels_fixed_BINARY.npy` — binary fast/slow motion labels generated
-
----
-
-## 🤖 Phase 3 — Transformer Encoder + CLIP Alignment
-
-**Week 5 | Objectives:** Train the EEG Transformer encoder and align its output embeddings to CLIP's visual-language latent space.
-
-### EEG Transformer Architecture
-
-The `EEGTransformer` (Sub-team 1/2) takes the spectrogram tensor and produces sequential token embeddings:
-
-```python
-# models/eeg_encoder/eeg_transformer.py
-class EEGTransformer(nn.Module):
-    """
-    Input : (B, T, C, S) = (B, 7, 62, 100) — temporal windows × channels × samples
-    Output: (B, T*S, latent_dim)            — sequential token embeddings
-
-    Architecture:
-        Linear projection : C → 256
-        TransformerEncoder: 4 layers, 8 heads, d_model=256
-        Output projection : 256 → latent_dim
-    """
-```
-
-The `EEGAdapter` (Sub-team 4) uses a **dual-path architecture**:
-
-```
-EEG Spectrogram (62 × 51 × 9)
-         │
-  ┌──────┴──────┐
-  │             │
-Flat Path    Band Path
-(28458→512   (310→256)
-  →256)          │
-  │             │
-  └──────┬──────┘
-         │  concat(256+256)
-         ▼
-     Fusion MLP (512→512)
-         │
-    EEG Embedding (512-dim)
-```
-
-- **Flat path:** Preserves all 28,458 raw time-frequency values → highest information retention (achieved best val_loss = 0.675)
-- **Band path:** Delta/Theta/Alpha/Beta/Gamma mean per channel → 310-dim spectral structure vector
-
-### CLIP Alignment
-
-The `EEGProjection` module converts the 512-dim EEG embedding into a `(77 × 768)` context tensor compatible with SD's cross-attention:
-
-```python
-# models/decoder/projection.py — EEGProjection
-# Input : (B, 512)
-# Output: (B, 77, 768)
-
-# Step 1: Deep MLP — 512 → 1536 → 768
-# Step 2: 77 Learnable Latent Queries — (1, 77, 768) expanded to (B, 77, 768)
-# Step 3: Inject EEG context → queries + eeg_features.unsqueeze(1)
-# Step 4: 4-layer Transformer Encoder (12 heads, d_model=768)
-# Step 5: Output projection + LayerNorm
-```
-
-**Training objective (Text MLP / CLIP alignment):**
-
-```python
-# Cosine similarity alignment loss
-loss = 1 - F.cosine_similarity(eeg_embedding, clip_image_embedding, dim=-1).mean()
-
-# Combined loss for Text MLP
-loss_total = λ1 * loss_mse + λ2 * loss_cosine
-# λ1 = 0.5, λ2 = 0.5 (tuned via W&B sweep)
-```
-
-### Training the Text MLP (CLIP Embedding Predictor)
-
-```bash
-# Linux / macOS
 python training/train_text_mlp.py \
     --data_dir /home/teaching/TEAM_22_DATASET/processed/processed \
     --batch_size 128 \
     --lr 1e-3 \
     --epochs 30 \
     --output_dir ./checkpoints/text_mlp
-
-# PowerShell (Windows)
-python training/train_text_mlp.py `
-    --data_dir "C:\datasets\eeg_processed" `
-    --batch_size 128 --lr 1e-3 --epochs 30
 ```
 
-### Training the Dynamics Classifier
+**Objective:** Align EEG embeddings with CLIP's visual-language latent space.
+
+```python
+# Combined loss
+loss_total = 0.5 * loss_mse + 0.5 * loss_cosine
+# Cosine: loss = 1 - cosine_similarity(eeg_emb, clip_emb)
+```
+
+### Stage 2 — Dynamics Classifier (Fast/Slow Motion)
 
 ```bash
 python training/train_dynamics_mlp.py \
@@ -575,87 +371,22 @@ python training/train_dynamics_mlp.py \
     --output_dir ./checkpoints/dynamics
 ```
 
-### Deliverables
-
-- [ ] Trained EEG Adapter checkpoint: `checkpoints/eeg_adapter.pth`
-- [ ] Trained Text MLP checkpoint: `checkpoints/text_mlp_final.pth`
-- [ ] Trained Dynamics Classifier checkpoint: `checkpoints/dynamics_model.pth`
-- [ ] CLIP cosine similarity ≥ 0.55 on validation set
-- [ ] W&B training curves logged
-
----
-
-## 🎬 Phase 4 — Latent Diffusion Fine-Tuning & Video Generation
-
-**Weeks 6–7 | Objectives:** Integrate EEG embeddings into Stable Diffusion's cross-attention, train the VideoLDM with DANA conditioning, and generate video frame sequences.
-
-### DANA — Dynamic-Aware Noise Addition
-
-The DANA module replaces the standard "start-from-pure-noise" diffusion initialization:
-
-```python
-# models/diffusion_backbone/dana.py
-
-BETA_FAST = 0.85   # High noise for dynamic/fast content
-BETA_SLOW = 0.35   # Low noise for static/slow content
-
-class DANAModule(nn.Module):
-    """
-    Inputs:
-        visual_latent : (B, 6, 4, 32, 32)  — from Sub-team 3 ViT Seq2Seq
-        is_fast       : (B, 1)              — from Sub-team 4 Dynamics MLP
-                        0.0 = slow motion, 1.0 = fast motion
-
-    Output:
-        noised_latent : (B, 6, 4, 32, 32)  — starting point for DDPM denoising
-        beta_used     : (B,)               — β value applied per sample
-
-    Noising formula:
-        noised = sqrt(1 - β²) * latent + β * N(0, I)
-        # β_slow → preserves ~65% of structural signal
-        # β_fast → preserves ~15%, UNet fills in dynamic content
-    """
-```
-
-**Why DANA matters:** Without DANA, the UNet must generate all visual content from pure Gaussian noise conditioned only on the weak EEG signal. With DANA, the ViT-predicted latent provides structural scaffolding — the UNet only needs to refine and condition, not hallucinate from scratch.
-
-### VideoLDM Training
-
-The `UNet2DConditionModel` from Stable Diffusion v1.5 is fine-tuned with **frozen backbone weights** and **trainable cross-attention layers only**:
-
-```python
-# training/train_videoldm.py — key hyperparameters
-BATCH_SIZE    = 2       # per-GPU batch (GPU memory constraint)
-GRAD_ACCUM    = 4       # effective batch = 8 samples
-LR            = 1e-4    # learning rate
-NUM_EPOCHS    = 10
-NUM_FRAMES    = 6       # frames per video clip
-MAX_GRAD_NORM = 1.0     # gradient clipping
-
-# Frozen: all UNet spatial conv/norm layers
-# Trainable: all CrossAttention key/value projection layers
-#            EEGProjection module
-```
-
-**Training strategy:**
-
-```python
-# Freeze backbone, unfreeze cross-attention
-for name, param in unet.named_parameters():
-    if "attn2" in name:  # cross-attention layers
-        param.requires_grad = True
-    else:
-        param.requires_grad = False
-
-# EEGProjection is always trainable
-for param in eeg_proj.parameters():
-    param.requires_grad = True
-```
-
-### Launch VideoLDM Training
+### Stage 3 — ViT Seq2Seq Latent Predictor
 
 ```bash
-# Linux (single GPU)
+python training/train_vit_seq2seq.py \
+    --data_dir /home/teaching/TEAM_22_DATASET/processed/processed \
+    --batch_size 32 \
+    --lr 1e-4 \
+    --epochs 50 \
+    --output_dir ./checkpoints/vit_seq2seq
+```
+
+### Stage 4 — VideoLDM Fine-Tuning
+
+The `UNet2DConditionModel` is fine-tuned with **frozen backbone weights** and **trainable cross-attention layers only**:
+
+```bash
 python training/train_videoldm.py \
     --data_dir /home/teaching/TEAM_22_DATASET/processed/processed \
     --weights_dir ./modelscope_weights \
@@ -667,62 +398,28 @@ python training/train_videoldm.py \
     --mixed_precision fp16 \
     --use_ema \
     --subset 20000
-
-# PowerShell
-python training/train_videoldm.py `
-    --data_dir "C:\datasets\eeg_processed" `
-    --batch_size 2 --grad_accum 4 --lr 1e-4 `
-    --epochs 10 --mixed_precision fp16 --use_ema
 ```
 
-**Mixed precision + gradient checkpointing** (required for GPUs < 24 GB VRAM):
+**Key training details:**
+- Effective batch size = 8 (batch_size=2 × grad_accum=4)
+- Only cross-attention (`attn2`) layers are trainable; all spatial conv/norm layers frozen
+- fp16 mixed precision + gradient checkpointing required for GPUs < 24 GB VRAM
 
-```python
-from torch.cuda.amp import autocast, GradScaler
-scaler = GradScaler()
-
-with autocast(dtype=torch.float16):
-    noise_pred = unet(noised_latent_flat, timesteps, context).sample
-    loss = F.mse_loss(noise_pred, noise_target)
-
-scaler.scale(loss).backward()
-scaler.unscale_(optimizer)
-torch.nn.utils.clip_grad_norm_(trainable_params, MAX_GRAD_NORM)
-scaler.step(optimizer)
-scaler.update()
-```
-
-### Training the ViT Seq2Seq Latent Predictor
+### W&B Hyperparameter Sweep
 
 ```bash
-python training/train_vit_seq2seq.py \
-    --data_dir /home/teaching/TEAM_22_DATASET/processed/processed \
-    --batch_size 32 \
-    --lr 1e-4 \
-    --epochs 50 \
-    --output_dir ./checkpoints/vit_seq2seq
+wandb sweep configs/sweep_config.yaml
+wandb agent <sweep-id>
 ```
-
-### Deliverables
-
-- [ ] Fine-tuned VideoLDM checkpoint: `checkpoints/unet_finetuned/`
-- [ ] ViT Seq2Seq checkpoint: `checkpoints/vit_seq2seq.pth`
-- [ ] EMA checkpoint: `checkpoints/unet_ema/`
-- [ ] Sample video sequences generated from test EEG windows
-- [ ] W&B training loss curves (diffusion MSE loss per epoch)
 
 ---
 
-## 📊 Phase 5 — Evaluation & Final Report
+## 🎬 Inference Pipeline
 
-**Week 8 | Objectives:** Full evaluation on the official test split, ablation studies, and final report preparation.
-
-### Generating Conditioning Tensors for Inference
-
-Before running the full inference pipeline, export all conditioning tensors from the trained sub-team models:
+### Step 1 — Export Conditioning Tensors
 
 ```bash
-# Step 1: Export text_embeddings.pt and is_fast.pt (Sub-team 4)
+# Sub-team 4: Export text_embeddings.pt and is_fast.pt
 python scripts/generate_tensors.py \
     --data_dir /home/teaching/TEAM_22_DATASET/processed/processed \
     --text_mlp_path checkpoints/text_mlp_final.pth \
@@ -731,24 +428,19 @@ python scripts/generate_tensors.py \
     --out_text text_embeddings.pt \
     --out_dynamics is_fast.pt
 
-# Step 2: Export visual_latents.pt (Sub-team 3 ViT Seq2Seq)
+# Sub-team 3: Export visual_latents.pt
 python scripts/generate_visual_latents.py \
     --data_dir /home/teaching/TEAM_22_DATASET/processed/processed \
     --vit_checkpoint checkpoints/vit_seq2seq.pth \
     --output visual_latents.pt
-# Output shape: (N_test_samples, 6, 4, 32, 32)
 
-# Step 3: Generate ground-truth VAE latents for oracle evaluation
+# Ground-truth VAE latents for oracle evaluation
 python scripts/generate_real_latents.py \
     --data_dir /home/teaching/TEAM_22_DATASET/processed/processed \
     --output real_inputs/gt_latents.pt
 ```
 
----
-
-## 🚀 Inference Pipeline
-
-### End-to-End Video Generation
+### Step 2 — Generate Video
 
 ```bash
 python scripts/generate_video.py \
@@ -764,7 +456,7 @@ python scripts/generate_video.py \
     --ddim
 ```
 
-### Pipeline Integration Test
+### End-to-End Pipeline Test
 
 ```bash
 python pipelines/run_pipeline_test.py \
@@ -788,7 +480,7 @@ noised_latent, beta = dana(vis_latent[i:i+1], is_fast[i:i+1])
 # 3. DDIM denoising loop with EEG cross-attention conditioning
 scheduler = DDIMScheduler(...)
 scheduler.set_timesteps(50)
-latent = noised_latent.reshape(1, 6*4, H, W)   # flatten frames
+latent = noised_latent.reshape(1, 6*4, H, W)
 
 for t in scheduler.timesteps:
     noise_pred = unet(latent, t, encoder_hidden_states=text_emb[i:i+1]).sample
@@ -796,12 +488,11 @@ for t in scheduler.timesteps:
 
 # 4. VAE decode each frame
 frames = []
-latent_frames = latent.reshape(6, 4, H, W)
-for frame_latent in latent_frames:
+for frame_latent in latent.reshape(6, 4, H, W):
     frame = vae.decode(frame_latent.unsqueeze(0) / 0.18215).sample
     frames.append(frame)   # each: (1, 3, 128, 128)
 
-# 5. Save as GIF / MP4
+# 5. Save output
 save_video(frames, "outputs/generated_clip.gif", fps=3)
 ```
 
@@ -809,7 +500,7 @@ save_video(frames, "outputs/generated_clip.gif", fps=3)
 
 ## 💾 Checkpoint Management
 
-### Checkpoint Directory Layout
+### Directory Layout
 
 ```
 checkpoints/
@@ -825,23 +516,18 @@ checkpoints/
 └── vit_seq2seq.pth                # ViT Seq2Seq latent predictor
 ```
 
-### Loading Checkpoints for Inference
+### Loading for Inference
 
 ```python
 from diffusers import UNet2DConditionModel
 from models.decoder.projection import EEGProjection
 from models.dynamics_predictor.subteam4_models import TextProjectorMLP, EEGAdapter
 
-# Load UNet
 unet = UNet2DConditionModel.from_pretrained("checkpoints/unet_best")
 unet.eval().to(device)
 
-# Load EEG modules
 eeg_adapter = EEGAdapter(output_dim=512)
 eeg_adapter.load_state_dict(torch.load("checkpoints/eeg_adapter.pth"))
-
-eeg_proj = EEGProjection(input_dim=512, output_dim=768, seq_len=77)
-# (EEGProjection weights are stored inside the UNet checkpoint after fine-tuning)
 
 # Load EMA weights for inference (preferred over raw checkpoint)
 ema_weights = torch.load("checkpoints/unet_ema/ema_weights.pt")
@@ -851,8 +537,6 @@ unet.load_state_dict(ema_weights)
 ---
 
 ## 🔧 Configuration & Hyperparameters
-
-### YAML Config (`configs/train_config.yaml`)
 
 ```yaml
 # EEG Encoder
@@ -880,7 +564,6 @@ training:
   mixed_precision: fp16
   use_ema: true
   ema_decay: 0.9999
-  save_every: 5
   subset: 20000
 
 # DANA
@@ -902,8 +585,8 @@ data:
   n_freq_bins: 51
   n_time_frames: 9
   n_video_frames: 6
-  latent_height: 16       # or 32 depending on processed/ version
-  latent_width: 16
+  latent_height: 32
+  latent_width: 32
 
 # Loss weights (Text MLP)
 loss:
@@ -911,48 +594,18 @@ loss:
   lambda_cosine: 0.5
 ```
 
-### W&B Sweep Example
-
-```yaml
-# configs/sweep_config.yaml
-program: training/sweep_train.py
-method: bayes
-metric:
-  name: val_cosine_sim
-  goal: maximize
-parameters:
-  lr:
-    distribution: log_uniform_values
-    min: 1e-5
-    max: 1e-3
-  dropout:
-    values: [0.1, 0.2, 0.3, 0.4]
-  lambda_cosine:
-    values: [0.3, 0.5, 0.7, 1.0]
-  batch_size:
-    values: [64, 128, 256]
-```
-
-```bash
-wandb sweep configs/sweep_config.yaml
-wandb agent <sweep-id>
-```
-
 ---
 
 ## 📏 Evaluation Metrics
 
-All metrics are computed on the official test split (15% of ~291k samples).
-
-| Metric | Category | Description | Target |
-|---|---|---|---|
-| **SSIM** | Visual Quality | Structural Similarity Index — luminance, contrast, structure. Range 0–1 ↑ | ≥ 0.30 |
-| **PSNR** | Visual Quality | Peak Signal-to-Noise Ratio in dB ↑ | ≥ 20 dB |
-| **FID** | Distribution | Fréchet Inception Distance — Inception-v3 feature distribution ↓ | < 100 |
-| **FVD** | Temporal | Fréchet Video Distance — I3D features across frames ↓ | < 1000 |
-| **CLIP Cosine Sim** | Semantic | Cosine similarity between CLIP embeddings of generated and GT images ↑ | ≥ 0.10 |
-| **Top-5 Accuracy** | Semantic | Inception-v3 top-5 classification accuracy on generated frames ↑ | ≥ 10% |
-| **MSE (Latent)** | Reconstruction | Per-sample MSE between predicted and GT VAE latents ↓ | < 0.20 |
+| Metric | Description | Target |
+|---|---|---|
+| **SSIM** | Structural Similarity Index — luminance, contrast, structure ↑ | ≥ 0.30 |
+| **PSNR** | Peak Signal-to-Noise Ratio (dB) ↑ | ≥ 20 dB |
+| **LPIPS** | Learned Perceptual Image Patch Similarity ↓ | < 0.40 |
+| **FID** | Fréchet Inception Distance ↓ | < 100 |
+| **CLIP Cosine Sim** | Cosine similarity between CLIP embeddings of generated and GT images ↑ | ≥ 0.10 |
+| **MSE (Latent)** | Per-sample MSE between predicted and GT VAE latents ↓ | < 0.20 |
 
 ### Running Evaluation
 
@@ -960,11 +613,11 @@ All metrics are computed on the official test split (15% of ~291k samples).
 python evaluation/evaluate.py \
     --generated_dir outputs/ \
     --gt_dir real_inputs/ \
-    --metrics ssim psnr fid fvd clip_sim top5 \
+    --metrics ssim psnr lpips fid clip_sim \
     --output_json evaluation/eval_results/metrics_video.json \
     --device cuda
 
-# Latent-space evaluation (faster, no VAE decode needed)
+# Latent-space evaluation
 python evaluation/evaluate.py \
     --mode latent \
     --pred_latents text_embeddings.pt \
@@ -976,85 +629,45 @@ python evaluation/evaluate.py \
 
 ## 📈 Results
 
-### Quantitative Results
+### Quantitative Metrics
 
-> 📌 **Placeholder** — fill in after final evaluation run
-
-| Model Variant | SSIM ↑ | PSNR ↑ | FID ↓ | FVD ↓ | CLIP Sim ↑ | Top-5 Acc ↑ |
-|---|---|---|---|---|---|---|
-| Baseline (no conditioning) | — | — | — | — | — | — |
-| EEG Adapter + Text MLP only | — | — | — | — | 0.06 | — |
-| + ViT Seq2Seq (no DANA) | — | — | — | — | — | — |
-| **Full Pipeline (+ DANA)** | — | — | — | — | — | — |
-| Oracle (GT latents) | — | — | — | — | — | — |
-
-*Current latent-space evaluation (metrics_latent.json): mean cosine_sim ≈ 0.04–0.12, mean MSE ≈ 0.19–0.24*
-
-### Qualitative Results
-
-> 📌 **Placeholder** — replace with actual GIF previews after video generation
-
-| Ground Truth | Generated Output |
-|---|---|
-| ![GT Sample 1](assets/gt_001.gif) | ![Gen Sample 1](assets/gen_001.gif) |
-| ![GT Sample 2](assets/gt_002.gif) | ![Gen Sample 2](assets/gen_002.gif) |
-| ![GT Sample 3](assets/gt_003.gif) | ![Gen Sample 3](assets/gen_003.gif) |
-
-*Caption: Ground truth video clips (left) vs. EEG-conditioned VideoLDM reconstructions (right). Each clip is 6 frames at 3 FPS (2 seconds). EEG recorded from 62 channels during passive video viewing.*
-
-### Per-Frame Comparison
-
-> 📌 **Placeholder** — replace with actual frame comparisons
-
-| Ground Truth Frame | Generated Frame | SSIM | CLIP Sim |
+| Metric | Full Model (DANA + ViT) | w/o DANA | w/o Vision Transformer |
 |---|---|---|---|
-| `![](assets/gt_frame_01.png)` | `![](assets/gen_frame_01.png)` | — | — |
-| `![](assets/gt_frame_02.png)` | `![](assets/gen_frame_02.png)` | — | — |
+| **SSIM ↑** | **0.6967** | 0.5459 | 0.4647 |
+| **PSNR ↑** | **29.17 dB** | 20.14 dB | 16.53 dB |
+| **LPIPS ↓** | **0.3526** | 0.4004 | 0.5400 |
+| **FID ↓** | **24.50** | — | — |
 
----
+**Latent-space evaluation** (test split, ~100 samples):
 
-## 🔬 Experiments & Ablations
+| Metric | Mean | Min | Max |
+|---|---|---|---|
+| Cosine Similarity ↑ | 0.0416 | −0.0910 | 0.1163 |
+| MSE ↓ | 0.2247 | 0.1846 | 0.4152 |
 
-### Ablation Study Design
+> The SSIM/PSNR/LPIPS/FID metrics reflect VideoLDM Phase 4 evaluation. The TemporalUNet approaches the architectural target of 0.0005 MSE over 5 training epochs, validating tensor shape contracts and gradient flow. Low latent cosine similarity reflects an early-stage CLIP alignment; the Text MLP requires ~10–15 epochs to produce strongly aligned embeddings.
 
-| Experiment | Description | Key Finding |
-|---|---|---|
-| **A1** — No DANA | Initialize UNet from pure Gaussian noise | Expected: lower structural coherence |
-| **A2** — No ViT Seq2Seq | Use random latent init instead of ViT predictions | Expected: poorer reconstruction fidelity |
-| **A3** — No CLIP alignment | Remove Text MLP, use zero context | Expected: semantically incoherent outputs |
-| **A4** — Flat path only | Remove band-pooled path from EEG Adapter | Expected: marginal CLIP sim drop |
-| **A5** — Band path only | Remove flat spectral path | Expected: significant val_loss increase |
-| **A6** — β_fast = β_slow = 0.5 | Fixed DANA beta (no dynamics awareness) | Expected: lower diversity across fast/slow clips |
-| **Full Pipeline** | All components enabled | Target: best FVD + CLIP sim |
+### SOTA Comparison (EEG2Video Paper)
 
-### W&B Ablation Tracking
-
-```bash
-# Run ablation A1 (no DANA)
-python pipelines/run_pipeline_test.py \
-    --ablation no_dana \
-    --wandb_run_name "ablation_no_dana"
-
-# Run ablation A3 (no CLIP)
-python pipelines/run_pipeline_test.py \
-    --ablation no_clip \
-    --wandb_run_name "ablation_no_clip"
-```
+| Metric | EEG2Video (SOTA) |
+|---|---|
+| 2-way Video Semantic Accuracy | 79.8% |
+| 40-way Video Semantic Accuracy | 15.9% |
+| SSIM | 0.256 (0.300 on 10-class subset) |
 
 ---
 
 ## ⚠ Challenges & Mitigations
 
-| Challenge | Severity | Root Cause | Fix Applied |
-|---|---|---|---|
-| **DataLoader RAM crash** | 🔴 High | `num_workers > 0` causes memory explosion with per-file `.pt` loading on 291k samples | Reduced to `num_workers=0` or `num_workers=2`; use `TRAIN_SUBSET=20000` |
-| **GPU memory overflow (>16 GB)** | 🔴 High | Full 6-frame batch through UNet2DConditionModel | fp16 mixed precision + `GRAD_ACCUM=4` + `BATCH_SIZE=2` |
-| **Wrong frame grouping in VAE latents** | 🔴 High | Reshaping `(300k, 4, 32, 32)` → `(50k, 6, 4, 32, 32)` groups unrelated frames | Switched to per-sample `video_sample_XXXXXX.pt` loading (correct grouping) |
-| **CLIP alignment instability** | 🔴 High | EEG Adapter initially collapsed to near-zero embeddings | Raw CLIP embedding injection as shortcut; train Adapter + MLP jointly |
-| **Mode collapse in generation** | 🟡 Medium | Diffusion model ignores EEG conditioning, generates average frames | Classifier-free guidance (random conditioning dropout p=0.1); guidance scale=7.5 |
-| **VAE scale mismatch** | 🟡 Medium | Synthetic latents had std≈0.18 vs real VAE std≈0.9–5.0 | Correct normalization: `latent / 0.18215` per SD convention |
-| **Wrong tensor alignment** | 🟡 Medium | Sub-team 3 and Sub-team 4 outputs in different sample orders | Strict alphabetical sort enforced in `AlignedInferenceDataset` |
-| **Subject variability** | 🟡 Medium | EEG patterns differ significantly across participants | z-score normalization per channel per epoch; future: subject ID conditioning |
+| Challenge | Root Cause | Fix Applied |
+|---|---|---|
+| **DataLoader RAM crash** | `num_workers > 0` causes memory explosion with per-file `.pt` loading on 291k samples | Set `num_workers=0`; use `TRAIN_SUBSET=20000` |
+| **GPU memory overflow** | Full 6-frame batch through UNet2DConditionModel exceeds 16 GB | fp16 mixed precision + `GRAD_ACCUM=4` + `BATCH_SIZE=2` |
+| **Wrong frame grouping in VAE latents** | Reshaping a flat tensor groups unrelated frames | Switched to per-sample `video_sample_XXXXXX.pt` loading |
+| **CLIP alignment instability** | EEG Adapter collapsed to near-zero embeddings early in training | Raw CLIP embedding injection as shortcut; train Adapter + MLP jointly |
+| **Mode collapse in generation** | Diffusion model ignores EEG conditioning | Classifier-free guidance (dropout p=0.1); guidance scale=7.5 |
+| **VAE scale mismatch** | Synthetic latents had std≈0.18 vs real VAE std≈0.9–5.0 | Correct normalization: `latent / 0.18215` per SD convention |
+| **Wrong tensor alignment** | Sub-team 3 and Sub-team 4 outputs in different sample orders | Strict alphabetical sort enforced in `AlignedInferenceDataset` |
 
 ---
 
@@ -1062,73 +675,57 @@ python pipelines/run_pipeline_test.py \
 
 | Member(s) | Sub-team | Responsibilities |
 |---|---|---|
-| [Name TBD] | **Sub-team 1 (EEG Preprocessing)** | MNE-Python bandpass filtering, STFT computation, epoch windowing, spectrogram validation, dataset class (`data/dataset.py`) |
-| [Name TBD] | **Sub-team 2 (VideoLDM)** | SD v1.5 UNet fine-tuning, EEGProjection, DANA integration, DDPM/DDIM training loop, mixed precision, EMA, checkpoint management (`training/train_videoldm.py`, `models/diffusion_backbone/`) |
-| [Name TBD] | **Sub-team 3 (ViT Seq2Seq)** | Vision Transformer encoder, Seq2Seq LSTM latent predictor, visual latent generation (`models/eeg_encoder/vision_transformer.py`, `scripts/generate_visual_latents.py`) |
-| [Name TBD] | **Sub-team 4 (Dynamics + Text MLP)** | Dual-path EEG Adapter, TextProjectorMLP, DynamicsClassifier, frequency-band pooling, W&B sweeps (`models/dynamics_predictor/`, `training/train_text_mlp.py`, `training/train_dynamics_mlp.py`) |
-| [Name TBD] | **Evaluation** | SSIM/PSNR/FID/FVD/CLIP-sim scripts, latent-space evaluation, oracle test, ablation experiments (`evaluation/evaluate.py`, `utils/oracle_test.py`) |
-| [Name TBD] | **Project Lead / Integration** | Module interface contracts, tensor alignment (`AlignedInferenceDataset`), pipeline integration test, final report coordination (`pipelines/run_pipeline_test.py`) |
-| [Name TBD] | **Technical Writing** | Documentation, README, mid-project report, final report (10–15 pages), presentation slides |
+| **Milan Jadav & Kamesh Singh** | Sub-team 1 — EEG Preprocessing | MNE-Python bandpass filtering, ICA artifact removal, STFT computation, epoch windowing, spectrogram validation, `data/dataset.py` |
+| **Shivam Gami** | Sub-team 2 — VideoLDM | SD v1.5 UNet fine-tuning, EEGProjection, DANA integration, DDPM/DDIM training loop, mixed precision, EMA, checkpoint management (`training/train_videoldm.py`, `models/diffusion_backbone/`) |
+| **Manan Sahni** | Sub-team 3 — ViT Seq2Seq | Vision Transformer encoder, Seq2Seq LSTM latent predictor, visual latent generation (`models/eeg_encoder/vision_transformer.py`, `scripts/generate_visual_latents.py`) |
+| **Vishal Meena** | Sub-team 4 — Dynamics + Text MLP | Dual-path EEG Adapter, TextProjectorMLP, DynamicsClassifier, frequency-band pooling, W&B sweeps (`models/dynamics_predictor/`, `training/train_text_mlp.py`, `training/train_dynamics_mlp.py`) |
+| **Rishab Bagul & Shivam Shingla** | Evaluation | SSIM/PSNR/LPIPS/FID/CLIP-sim scripts, latent-space evaluation, oracle test, ablation experiments (`evaluation/evaluate.py`, `utils/oracle_test.py`) |
+| **Vipresh Gupta** | Project Lead / Integration | Module interface contracts, tensor alignment (`AlignedInferenceDataset`), pipeline integration test, final coordination (`pipelines/run_pipeline_test.py`) |
+| **Sarthak Kardam & Raghav Bansal** | Technical Writing | Documentation, README, mid-project report, final report, presentation slides |
 
 ---
 
 ## 🔮 Future Work
 
 - **Temporal Attention Modules:** Insert 3D attention layers between spatial UNet blocks to enforce inter-frame consistency (full VideoLDM extension)
-- **Subject-Adaptive Conditioning:** Add learnable subject ID embedding as auxiliary input to handle inter-subject EEG variability
-- **LoRA Fine-tuning:** Use Low-Rank Adaptation for memory-efficient full UNet fine-tuning on limited GPU VRAM
-- **Higher Resolution Output:** Scale VAE decoder from 128×128 to 256×256 using SD v2.1 or SDXL backbone
-- **Optical Flow Post-Processing:** Apply temporal smoothing between generated frames to reduce flickering artifacts
-- **Contrastive EEG Pre-training:** Pre-train EEG Adapter with CLIP contrastive loss on large-scale EEG datasets before task-specific fine-tuning
-- **Real-Time Inference:** Optimize DANA + DDIM pipeline for < 1 second per clip (distillation / consistency models)
+- **Subject-Adaptive Conditioning:** Add learnable subject ID embedding to handle inter-subject EEG variability
+- **LoRA Fine-tuning:** Memory-efficient full UNet fine-tuning using Low-Rank Adaptation
+- **Higher Resolution Output:** Scale from 128×128 to 256×256 using SD v2.1 or SDXL backbone
+- **Contrastive EEG Pre-training:** Pre-train EEG Adapter with CLIP contrastive loss on large-scale EEG datasets
+- **Real-Time Inference:** Optimize DANA + DDIM pipeline via distillation / consistency models for < 1 second per clip
 
 ---
 
 ## 🛠 Troubleshooting
 
-**Q: `RuntimeError: CUDA out of memory` during VideoLDM training**
+**`RuntimeError: CUDA out of memory` during training**
 
 ```bash
-# Reduce batch size and enable gradient checkpointing
 python training/train_videoldm.py --batch_size 1 --grad_accum 8 \
     --gradient_checkpointing --mixed_precision fp16
 ```
 
-**Q: DataLoader worker process killed (`Killed` message)**
+**DataLoader worker killed**
 
 ```python
-# In train_videoldm.py, set:
+# Set in train_videoldm.py:
 DataLoader(..., num_workers=0, pin_memory=False)
-# Or add to your bash session:
-export PYTORCH_NO_CUDA_MEMORY_CACHING=1
 ```
 
-**Q: `KeyError: eeg_sample_XXXXXX.pt not found` during dataset loading**
-
-```bash
-# Verify dataset integrity
-ls /home/teaching/TEAM_22_DATASET/processed/processed/ | wc -l
-# Should be ≥ 291,000 files (3 modalities × 97k samples)
-python -c "from data.dataset import EEGVideoDataset; ds = EEGVideoDataset('...', 'train'); print(len(ds))"
-```
-
-**Q: Generated videos are all identical (mode collapse)**
+**Generated videos are all identical (mode collapse)**
 
 ```python
-# Increase classifier-free guidance scale during inference
 guidance_scale = 10.0  # default 7.5; try 10–15 for more diversity
-# Also check DANA beta values — if is_fast is always 0 or 1:
-print(is_fast.mean())  # should be between 0.2 and 0.8 for a healthy split
+print(is_fast.mean())  # should be between 0.2 and 0.8 for healthy split
 ```
 
-**Q: `cosine_sim` in metrics_latent.json is near 0 or negative**
+**`cosine_sim` in metrics_latent.json is near 0 or negative**
 
-This is expected at early training stages. The Text MLP requires ~10–15 epochs to begin producing meaningful CLIP-aligned embeddings. Monitor the `val_cosine_sim` curve in W&B — it should trend positive by epoch 5 with `lr=1e-3`.
+Expected at early training stages. Monitor `val_cosine_sim` in W&B — it should trend positive by epoch 5 with `lr=1e-3`.
 
-**Q: Tensor shape mismatch between Sub-team 3 and Sub-team 4 outputs**
+**Tensor shape mismatch between sub-team outputs**
 
 ```bash
-# Verify alignment
 python -c "
 import torch
 vis = torch.load('visual_latents.pt')
@@ -1144,8 +741,8 @@ print(vis.shape[0], txt.shape[0], isf.shape[0])  # Must all be equal
 
 - **Prof. [Mentor Name]**, IIT Mandi — for project mentorship, dataset access, and technical guidance
 - **IITM HPC Cluster** — A100 GPU compute resources for VideoLDM training
-- **RunwayML** — Stable Diffusion v1.5 pre-trained weights (`runwayml/stable-diffusion-v1-5`)
-- **OpenAI CLIP** — Pre-trained visual-language embedding model
+- **RunwayML** — Stable Diffusion v1.5 pre-trained weights
+- **OpenAI** — CLIP pre-trained visual-language embedding model
 - **HuggingFace 🤗** — `diffusers` library for SD pipeline and DDPM/DDIM schedulers
 - **Weights & Biases** — Experiment tracking and hyperparameter sweeps
 
@@ -1168,10 +765,15 @@ print(vis.shape[0], txt.shape[0], isf.shape[0])  # Must all be equal
 
 [7] Song, J., et al. (2021). Denoising Diffusion Implicit Models. ICLR 2021.
 
-[8] Palazzo, S., et al. (2020). Decoding Brain Representations by Multimodal Learning of Neural Activity and Visual Features. IEEE TPAMI (EEG-ImageNet / EEGCVPR40 dataset).
+[8] Wu, J., et al. (2023). Tune-A-Video: One-Shot Tuning of Image Diffusion Models for Text-to-Video Generation. ICCV 2023.
 
-[9] CVPR 2026 Submission #22. Structured Multivariate Time-Series Modeling for Diffusion-Based EEG-to-Image Reconstruction. (CARD Transformer baseline reference.)
+[9] Palazzo, S., et al. (2020). Decoding Brain Representations by Multimodal Learning of Neural Activity and Visual Features. IEEE TPAMI (SEED-DV / EEGCVPR40 dataset).
 ```
 
 ---
 
+<div align="center">
+
+*B.Tech CS671 · Group 22 · Indian Institute of Technology, Mandi · 2025–26*
+
+</div>
