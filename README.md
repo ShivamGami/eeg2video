@@ -739,7 +739,7 @@ print(vis.shape[0], txt.shape[0], isf.shape[0])  # Must all be equal
 
 ## 🙏 Acknowledgements
 
-- **Prof. [Mentor Name]**, IIT Mandi — for project mentorship, dataset access, and technical guidance
+- **Dr. Jyoti Nigam**, IIT Mandi — for project mentorship, dataset access, and technical guidance
 - **IITM HPC Cluster** — A100 GPU compute resources for VideoLDM training
 - **RunwayML** — Stable Diffusion v1.5 pre-trained weights
 - **OpenAI** — CLIP pre-trained visual-language embedding model
