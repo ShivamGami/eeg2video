@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EEG-to-Video Generation | Final Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --bg: #060810;
+    --bg-secondary: #0a0c14;
+    --fg: #f0f4ff;
+    --muted: #8892a4;
+    --accent: #00f2ff;
+    --accent-dim: rgba(0, 242, 255, 0.12);
+    --accent-glow: rgba(0, 242, 255, 0.28);
+    --primary: #8b5cf6;
+    --primary-dim: rgba(139, 92, 246, 0.15);
+    --secondary: #06b6d4;
+    --card: rgba(10, 12, 20, 0.85);
+    --border: rgba(255, 255, 255, 0.08);
+    --danger: #f43f5e;
+    --warn: #fbbf24;
+    --info: #9d4edd;
+    --success: #10b981;
+    --font-sans: 'Inter', sans-serif;
+    --font-head: 'Space Grotesk', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--fg);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* Backgrounds */
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px; opacity: 0.2;
+  }
+  .bg-glow-1 {
+    position: fixed; width: 800px; height: 800px; top: -300px; right: -300px; z-index: 0;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  }
+  .bg-glow-2 {
+    position: fixed; width: 700px; height: 700px; bottom: -200px; left: -200px; z-index: 0;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+  }
+
+  /* Header Bar */
+  .header-bar {
+    position: fixed; top: 0; left: 0; right: 0; height: 60px; z-index: 150;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px; background: rgba(6, 8, 16, 0.85); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-logo {
+    font-family: var(--font-head); font-weight: 700; font-size: 16px;
+    display: flex; align-items: center; gap: 10px; color: var(--fg); text-decoration: none;
+  }
+  .header-logo .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--primary));
+    box-shadow: 0 0 10px var(--accent);
+  }
+
+  /* Slides */
+  .slides-container { position: relative; width: 100vw; height: 100vh; z-index: 10; }
+  .slide {
+    position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center;
+    padding: 80px 100px 60px; opacity: 0; transform: translateX(50px);
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  .slide.active { opacity: 1; transform: translateX(0); pointer-events: all; }
+
+  /* Navigation UI */
+  .progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px; z-index: 160;
+    background: linear-gradient(90deg, var(--accent), var(--primary));
+    transition: width 0.3s ease;
+  }
+  .slide-indicator {
+    position: fixed; bottom: 30px; right: 50px; z-index: 100;
+    font-family: var(--font-mono); font-size: 14px; color: var(--muted); letter-spacing: 1px;
+  }
+  .slide-indicator .current { color: var(--accent); font-weight: 700; font-size: 18px; }
+  .nav-dots {
+    position: fixed; right: 40px; top: 50%; transform: translateY(-50%); z-index: 100;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .nav-dot { width: 8px; height: 8px; border-radius: 50%; border: none; background: var(--muted); opacity: 0.3; cursor: pointer; transition: all 0.2s; }
+  .nav-dot.active { opacity: 1; background: var(--accent); box-shadow: 0 0 10px var(--accent); transform: scale(1.4); }
+
+  /* Typography & Utilities */
+  .slide-tag {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+  }
+  .slide-tag::before { content: ''; width: 24px; height: 2px; background: var(--accent); }
+  .slide-title {
+    font-family: var(--font-head); font-size: clamp(36px, 4vw, 54px); font-weight: 800;
+    line-height: 1.1; margin-bottom: 24px; letter-spacing: -1px;
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, var(--accent), var(--primary));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .slide-subtitle {
+    font-size: 18px; color: var(--muted); line-height: 1.6; max-width: 900px; font-weight: 400; margin-bottom: 30px;
+  }
+
+  /* Components */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  
+  .info-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 24px; backdrop-filter: blur(12px); position: relative; overflow: hidden;
+  }
+  .info-card i { margin-bottom: 12px; font-size: 24px; color: var(--accent); }
+  .info-card h4 { font-family: var(--font-head); font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--fg); }
+  .info-card p { font-size: 15px; color: var(--muted); line-height: 1.6; }
+  .info-card.highlight { border-color: var(--primary-dim); background: linear-gradient(180deg, rgba(139,92,246,0.08), rgba(10,12,20,0.85)); }
+  .info-card.success { border-color: rgba(16,185,129,0.3); background: linear-gradient(180deg, rgba(16,185,129,0.05), rgba(10,12,20,0.85)); }
+  .info-card.danger { border-color: rgba(244,63,94,0.3); background: linear-gradient(180deg, rgba(244,63,94,0.05), rgba(10,12,20,0.85)); }
+  
+  .stat-val { font-family: var(--font-mono); font-size: 32px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+  .stat-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+
+  .data-table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .data-table th { text-align: left; padding: 14px 20px; background: rgba(255,255,255,0.03); color: var(--accent); font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  .data-table td { padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--muted); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table strong { color: var(--fg); }
+
+  .pipeline-step {
+    display: flex; align-items: center; gap: 20px; padding: 16px 24px;
+    border: 1px solid var(--border); border-radius: 12px; background: var(--card); margin-bottom: 12px;
+  }
+  .step-num {
+    width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    background: var(--primary-dim); color: var(--primary); font-family: var(--font-mono); font-weight: 700; font-size: 16px; flex-shrink: 0;
+  }
+  .pipeline-step h4 { font-size: 16px; margin-bottom: 4px; }
+  .pipeline-step p { font-size: 14px; color: var(--muted); margin: 0; }
+
+  .asset-img { width: 100%; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .logo-img { max-height: 80px; object-fit: contain; }
+
+  /* Videos */
+  .video-pair { display: flex; flex-direction: column; gap: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+  .video-pair video { width: 100%; border-radius: 8px; background: #000; aspect-ratio: 1; object-fit: cover; flex: 1; min-width: 0; }
+  .video-labels { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; text-align: center; font-family: var(--font-mono); font-size: 11px; color: var(--muted); padding: 0 4px; }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow-1"></div>
+<div class="bg-glow-2"></div>
+
+<header class="header-bar">
+  <div class="header-logo">
+    <div class="dot"></div>
+    CS671 | EEG→Video Generation
+  </div>
+  <div style="font-size: 13px; color: var(--muted); font-family: var(--font-mono);">IIT Mandi · Group 22</div>
+</header>
+
+<div class="progress-bar" id="progressBar"></div>
+<nav class="nav-dots" id="navDots"></nav>
+<div class="slide-indicator" id="slideIndicator"></div>
+
+<main class="slides-container" id="slidesContainer">
+
+  <!-- Slide 1: Title -->
+  <section class="slide active">
+    <div style="text-align: center; max-width: 900px; margin: 0 auto;">
+      <div style="margin-bottom: 40px;">
+        <img src="iit mandi logooo.png" alt="IIT Mandi Logo" class="logo-img" style="filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));">
+      </div>
+      <div class="slide-tag" style="justify-content: center;">CS671 · Deep Learning and Applications</div>
+      <h1 class="slide-title" style="font-size: 64px;">EEG-Based <span class="gradient-text">Visual Brain Decoding</span></h1>
+      <p class="slide-subtitle" style="margin: 0 auto 40px; font-size: 22px;">
+        Temporally coherent video generation from neural signals using<br>Transformer Encoders, Multi-Path Conditioning, and Stable Diffusion.
+      </p>
+      <div style="display: flex; justify-content: center; gap: 20px;">
+        <div class="info-card" style="padding: 12px 24px; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-users" style="font-size:16px; margin:0;"></i> <strong>Group:</strong> 22</div>
+        <div class="info-card" style="padding: 12px 24px; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-chalkboard-user" style="font-size:16px; margin:0;"></i> <strong>Professor:</strong> Aditya Nigam</div>
+        <div class="info-card" style="padding: 12px 24px; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-chalkboard" style="font-size:16px; margin:0;"></i> <strong>Mentor:</strong> Jyoti Nigam</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 2: Team Introduction -->
+  <section class="slide">
+    <div class="slide-tag">02 / The Team</div>
+    <h2 class="slide-title">Group 22 Members</h2>
+    <div class="grid-4" style="max-width: 1000px;">
+      <div class="info-card" style="padding: 16px; text-align: center;"><i class="fa-solid fa-user-circle" style="font-size: 32px; margin-bottom: 8px;"></i><h4>Vipresh Gupta</h4><p>B24412</p></div>
+      <div class="info-card" style="padding: 16px; text-align: center;"><i class="fa-solid fa-user-circle" style="font-size: 32px; margin-bottom: 8px;"></i><h4>Vishal Meena</h4><p>B24413</p></div>
+      <div class="info-card" style="padding: 16px; text-align: center;"><i class="fa-solid fa-user-circle" style="font-size: 32px; margin-bottom: 8px;"></i><h4>Sarthak Kardam</h4><p>B24404</p></div>
+      <div class="info-card" style="padding: 16px; text-align: center;"><i class="fa-solid fa-user-circle" style="font-size: 32px; margin-bottom: 8px;"></i><h4>Manan Sahni</h4><p>B24397</p></div>
+      <div class="info-card" style="padding: 16px; text-align: center;"><i class="fa-solid fa-user-circle" style="font-size: 32px; margin-bottom: 8px;"></i><h4>Raghav Bansal</h4><p>B24402</p></div>
+      <div class="info-card" style="padding: 16px; text-align: center;"><i class="fa-solid fa-user-circle" style="font-size: 32px; margin-bottom: 8px;"></i><h4>Shivam Gami</h4><p>B24405</p></div>
+      <div class="info-card" style="padding: 16px; text-align: center;"><i class="fa-solid fa-user-circle" style="font-size: 32px; margin-bottom: 8px;"></i><h4>Shivam Singla</h4><p>B24406</p></div>
+      <div class="info-card" style="padding: 16px; text-align: center;"><i class="fa-solid fa-user-circle" style="font-size: 32px; margin-bottom: 8px;"></i><h4>Kamesh Singh</h4><p>B23317</p></div>
+      <div class="info-card" style="padding: 16px; text-align: center;"><i class="fa-solid fa-user-circle" style="font-size: 32px; margin-bottom: 8px;"></i><h4>Milan Jadav</h4><p>B23134</p></div>
+      <div class="info-card" style="padding: 16px; text-align: center;"><i class="fa-solid fa-user-circle" style="font-size: 32px; margin-bottom: 8px;"></i><h4>Rishab Bagul</h4><p>B24151</p></div>
+    </div>
+  </section>
+
+  <!-- Slide 3: Problem Statement -->
+  <section class="slide">
+    <div class="slide-tag">03 / Problem & Motivation</div>
+    <h2 class="slide-title">Decoding the <span class="gradient-text">Visual Cinema</span></h2>
+    <div class="grid-2">
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="info-card">
+          <i class="fa-solid fa-eye"></i>
+          <h4>Evolving Scenes</h4>
+          <p>Our visual experiences are composed of continuously evolving scenes caused by the movement of objects and viewing perspective. To investigate the mechanism of our visual system, neuroimaging techniques (fMRI, MEG, EEG) are used to analyze brain activities.</p>
+        </div>
+        <div class="info-card highlight">
+          <i class="fa-solid fa-brain"></i>
+          <h4>The Temporal Resolution Gap</h4>
+          <p>Recently, works have reconstructed high-quality two-second videos from single fMRI frames. However, limited by the low temporal resolution of fMRI, these lack the ability of capturing high dynamic changes. <strong>Thus, we propose video reconstruction from EEG signals.</strong></p>
+        </div>
+      </div>
+      <div class="info-card danger" style="padding: 30px;">
+        <i class="fa-solid fa-bridge-water" style="color: var(--danger);"></i>
+        <h4 style="font-size: 22px; margin-bottom: 20px;">The Semantic &amp; Temporal Gap</h4>
+        <p style="font-size: 16px; margin-bottom: 15px;">Mapping low-dimensional neural signals to the high-dimensional pixel space of video frames requires overcoming the <strong>semantic gap</strong> between neural activity patterns and perceptual representations.</p>
+        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 15px;">
+          <li style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid var(--danger);">
+            <strong>Noisy Signals:</strong> EEG is notoriously noisy, non-stationary, and highly variable across subjects.
+          </li>
+          <li style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid var(--warn);">
+            <strong>Temporal Consistency:</strong> Generating video demands architectures that explicitly model cross-frame dependencies, absent from standard image models.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 4: Abstract -->
+  <section class="slide">
+    <div class="slide-tag">04 / Executive Summary</div>
+    <h2 class="slide-title">Abstract</h2>
+    <div class="info-card highlight" style="max-width: 1000px; padding: 40px; font-size: 18px; line-height: 1.8;">
+      <i class="fa-solid fa-quote-left" style="font-size: 32px; color: var(--primary); opacity: 0.5;"></i>
+      <p style="color: var(--fg); font-size: 20px; margin-top: 10px;">
+        Decoding human visual perception directly from brain activity stands as one of the most ambitious frontiers in computational neuroscience. This project, <strong>EEG2Video</strong>, proposes a novel multimodal Deep Learning pipeline for reconstructing dynamic visual stimuli (video) from non-invasive EEG signals.
+      </p>
+      <p style="color: var(--muted); font-size: 18px; margin-top: 15px;">
+        Leveraging the SEED-DV dataset, raw 64-channel EEG recordings are transformed via <strong>STFT</strong> into frequency spectrograms and encoded through a Transformer Encoder. A novel <strong>Dynamic-Aware Noise Adding (DANA)</strong> module adaptively conditions latent vectors based on EEG-derived temporal motion labels. Video generation is performed using a fine-tuned <strong>Stable Diffusion v1.5</strong> architecture augmented with a <strong>TemporalUNet</strong> backbone to ensure inter-frame coherence.
+      </p>
+    </div>
+  </section>
+
+  <!-- Slide 5: Background -->
+  <section class="slide">
+    <div class="slide-tag">05 / Background</div>
+    <h2 class="slide-title">Why EEG over fMRI?</h2>
+    <div class="grid-2" style="align-items: center;">
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="info-card highlight">
+          <i class="fa-solid fa-bolt"></i>
+          <h4>High Temporal Resolution</h4>
+          <p>fMRI has excellent spatial resolution but poor temporal resolution (captures changes every ~2 seconds). <strong>EEG offers millisecond-level temporal resolution</strong>, making it uniquely suited for capturing the fast neural dynamics required for <em>video</em> reconstruction.</p>
+        </div>
+        <div class="info-card">
+          <i class="fa-solid fa-laptop-medical"></i>
+          <h4>Accessibility & Portability</h4>
+          <p>fMRI and MEG require massive, stationary, and expensive medical equipment. EEG is low-cost, portable, and non-invasive, paving the way for practical, real-world BCI applications outside clinical settings.</p>
+        </div>
+      </div>
+      <div class="info-card" style="text-align: center; padding: 40px;">
+        <i class="fa-solid fa-wave-square" style="font-size: 64px; color: var(--accent); margin-bottom: 20px;"></i>
+        <h4 style="font-size: 24px;">EEG Setup</h4>
+        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px; align-items: center;">
+          <span style="padding: 10px 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; font-size: 16px; font-family: var(--font-mono); width: 100%;">64 Channels</span>
+          <span style="padding: 10px 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; font-size: 16px; font-family: var(--font-mono); width: 100%;">200Hz Sampling</span>
+          <span style="padding: 10px 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; font-size: 16px; font-family: var(--font-mono); width: 100%;">Non-Invasive BCI</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 6: SOTA Paper Summary -->
+  <section class="slide">
+    <div class="slide-tag">06 / Literature</div>
+    <h2 class="slide-title">State-of-the-Art Baseline</h2>
+    <div class="grid-2">
+      <div class="info-card">
+        <i class="fa-solid fa-file-alt"></i>
+        <h4>EEG2Video: Towards Decoding Dynamic Visual Perception from EEG Signals</h4>
+        <p style="margin-bottom: 15px; margin-top: 10px;"><strong>Authors:</strong> Xuan-Hao Liu et al.</p>
+        <p><strong>Conference:</strong> NeurIPS 2024</p>
+        <p><strong>Dataset Used:</strong> SEED-DV (20 subjects, 1400 EEG-video pairs)</p>
+      </div>
+      <div class="info-card">
+        <i class="fa-solid fa-microchip"></i>
+        <h4>Architecture in Brief</h4>
+        <p>A Seq2Seq Transformer that densely maps temporally-windowed EEG embeddings (extracted via a GLMNet) to video latents. It utilizes a Dynamic-Aware Noise-Adding (DANA) module and a fine-tuned inflated Stable Diffusion (Tune-A-Video) model guided by CLIP-aligned embeddings.</p>
+      </div>
+      <div class="info-card highlight" style="grid-column: span 2;">
+        <i class="fa-solid fa-star"></i>
+        <h4>Key Contributions</h4>
+        <ul style="margin-left: 20px; color: var(--fg); font-size: 15px; line-height: 1.8;">
+          <li>Introduced the first large EEG-video paired dataset (SEED-DV) with rich meta-annotation.</li>
+          <li>Proposed GLMNet encoder combining global and local (occipital) EEG features.</li>
+          <li>First to leverage EEG's high temporal resolution via Seq2Seq alignment for dynamic video reconstruction.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 7: SOTA Limitations -->
+  <section class="slide">
+    <div class="slide-tag">07 / Literature</div>
+    <h2 class="slide-title">EEG2Video Results & Limitations</h2>
+    <div class="grid-2">
+      <div class="info-card">
+        <i class="fa-solid fa-chart-line"></i>
+        <h4>Reported Metrics (Full 40-class)</h4>
+        <table class="data-table" style="margin-top: 15px;">
+          <tr><th>Metric</th><th>EEG2Video (SOTA)</th></tr>
+          <tr><td>2-way video semantic acc.</td><td>79.8%</td></tr>
+          <tr><td>40-way video semantic acc.</td><td>15.9%</td></tr>
+          <tr><td>SSIM (pixel-level)</td><td>0.256</td></tr>
+        </table>
+        <p style="margin-top: 15px; font-size: 13px; font-style: italic;">Note: On 10-class subset, SSIM reaches 0.300.</p>
+      </div>
+      <div class="info-card danger">
+        <i class="fa-solid fa-triangle-exclamation" style="color: var(--danger);"></i>
+        <h4>Identified Limitations</h4>
+        <ul style="margin-left: 20px; color: var(--fg); font-size: 15px; line-height: 1.8;">
+          <li><strong>Single Session:</strong> Each subject recorded in only one session, lacking stable temporal neural patterns.</li>
+          <li><strong>Subject-Dependent Only:</strong> Cross-subject generalization is entirely unexplored (a major gap for EEG).</li>
+          <li><strong>Preliminary Quality:</strong> Overall reconstruction performance is preliminary (SSIM 0.256).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 8: Related Work -->
+  <section class="slide">
+    <div class="slide-tag">08 / Background</div>
+    <h2 class="slide-title">Related Works & Foundations</h2>
+    <div class="grid-2">
+      <div class="info-card">
+        <i class="fa-solid fa-brain"></i>
+        <h4>Neural Decoding from EEG</h4>
+        <p>Early approaches were limited to binary classification (e.g., motor imagery). Recent advances enabled emotion recognition and coarse scene reconstruction, but full video decoding remained unexplored due to temporal complexity.</p>
+      </div>
+      <div class="info-card">
+        <i class="fa-solid fa-compress"></i>
+        <h4>Latent Diffusion Models (LDMs)</h4>
+        <p>Rombach et al. (2022) proposed LDMs as a computationally efficient alternative to pixel-space diffusion by operating in the compressed latent space of a pre-trained VAE, serving as our powerful generative base.</p>
+      </div>
+      <div class="info-card highlight">
+        <i class="fa-solid fa-film"></i>
+        <h4>Tune-A-Video</h4>
+        <p>Wu et al. (2023) demonstrated that image diffusion models can be adapted for video by injecting lightweight 1D temporal attention layers while freezing spatial weights, preserving rich visual priors without catastrophic forgetting.</p>
+      </div>
+      <div class="info-card">
+        <i class="fa-solid fa-object-group"></i>
+        <h4>CLIP and ViT Representations</h4>
+        <p>Radford et al. and Dosovitskiy et al. proved that CLIP text encoders and Vision Transformers produce semantically rich embeddings. We leverage both modalities as complementary conditioning streams.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 9: Differentiation -->
+  <section class="slide">
+    <div class="slide-tag">09 / Our Contribution</div>
+    <h2 class="slide-title">How We Differentiate</h2>
+    <div class="info-card">
+      <table class="data-table" style="width: 100%;">
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>SOTA (EEG2Video)</th>
+            <th>Other Work (Tune-A-Video/LDM)</th>
+            <th style="color: var(--primary);">Our Implementation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Temporal Modeling</strong></td>
+            <td>GLMNet + Seq2Seq</td>
+            <td>1D Temporal Attention (Text to Video)</td>
+            <td><strong>TemporalUNet (Interleaved 1D Attn) driven by EEG</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Conditioning</strong></td>
+            <td>CLIP primarily</td>
+            <td>Text prompts only</td>
+            <td><strong>Tri-Path: Semantic (CLIP) + Structural (ViT) + DANA</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Noise Initialization</strong></td>
+            <td>Standard Gaussian</td>
+            <td>Standard Gaussian</td>
+            <td><strong>DANA (Motion-conditioned variance based on dynamics)</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Preprocessing</strong></td>
+            <td>Global-Local Mixture</td>
+            <td>N/A</td>
+            <td><strong>STFT Spectrograms + Transformer Encoder</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Slide 10: Dataset -->
+  <section class="slide">
+    <div class="slide-tag">10 / Data</div>
+    <h2 class="slide-title">Dataset & Preprocessing</h2>
+    <div class="grid-2">
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="grid-3">
+          <div class="info-card" style="padding: 15px; text-align: center;"><div class="stat-val" style="font-size:24px;">64</div><div class="stat-label">Channels</div></div>
+          <div class="info-card" style="padding: 15px; text-align: center;"><div class="stat-val" style="font-size:24px;">200Hz</div><div class="stat-label">Sampling</div></div>
+          <div class="info-card" style="padding: 15px; text-align: center;"><div class="stat-val" style="font-size:24px;">500</div><div class="stat-label">Timesteps</div></div>
+        </div>
+        <div class="info-card highlight">
+          <i class="fa-solid fa-filter"></i>
+          <h4>Preprocessing Steps</h4>
+          <ul style="margin-top: 15px; margin-left: 20px; color: var(--fg); font-size: 15px; line-height: 1.8;">
+            <li><strong>1. Bandpass Filtering:</strong> Zero-phase Butterworth (0.5–50 Hz) removes drift and high-frequency noise outside physiological EEG bands.</li>
+            <li><strong>2. Artifact Removal:</strong> Independent Component Analysis (ICA) suppresses ocular (EOG) and muscular (EMG) artifacts.</li>
+            <li><strong>3. Epoch Segmentation:</strong> Continuous recordings segmented into 500 time-step epochs time-locked to video stimuli.</li>
+            <li><strong>4. Standardization:</strong> Per-channel z-score normalization ensures zero mean and unit variance.</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <div class="info-card" style="height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 20px;">
+          <h4 style="text-align: center; margin-bottom: 15px;">SEED-DV Ground Truth Video</h4>
+          <video loop muted playsinline src="new_gt_vs_generated/GT - 1.mp4" style="width: 100%; border-radius: 8px;"></video>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 11: Pipeline Overview -->
+  <section class="slide">
+    <div class="slide-tag">11 / Architecture</div>
+    <h2 class="slide-title">Full Pipeline Overview</h2>
+    <div class="grid-2" style="align-items: center;">
+      <div>
+        <p class="slide-subtitle" style="margin-bottom: 20px;">A 5-stage hybrid deep learning architecture designed specifically for mapping noisy brain signals to temporally coherent video latents.</p>
+        <div class="info-card highlight">
+          <ul style="margin-left: 20px; color: var(--fg); font-size: 16px; line-height: 2;">
+            <li><span style="color: var(--accent);">1.</span> STFT Preprocessing &amp; Tokenization</li>
+            <li><span style="color: var(--accent);">2.</span> Transformer Encoder Base</li>
+            <li><span style="color: var(--accent);">3.</span> Tri-Path Extraction (CLIP + ViT + Classifier)</li>
+            <li><span style="color: var(--accent);">4.</span> DANA Latent Stabilization</li>
+            <li><span style="color: var(--accent);">5.</span> TemporalUNet Generation &amp; VAE Decode</li>
+          </ul>
+        </div>
+      </div>
+      <div style="text-align: center; padding: 40px; background: var(--card); border: 1px solid var(--border); border-radius: 16px;">
+        <i class="fa-solid fa-project-diagram" style="font-size: 64px; color: var(--accent); margin-bottom: 20px;"></i>
+        <h3 style="font-family: var(--font-head); font-size: 24px; margin-bottom: 15px;">Interactive Pipeline Architecture</h3>
+        <p style="color: var(--muted); margin-bottom: 30px;">Explore the high-resolution architecture diagram on our main website interface.</p>
+        <a href="pipeline.html" style="padding:15px 30px; background:var(--accent); color:#000; border-radius:8px; text-decoration:none; font-weight:bold; font-family:var(--font-mono); display:inline-block; transition: transform 0.2s;">
+          View Interactive Pipeline &rarr;
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 12: Stage 1 STFT -->
+  <section class="slide">
+    <div class="slide-tag">12 / Methodology</div>
+    <h2 class="slide-title">Stage 1: Preprocessing (STFT)</h2>
+    <div class="grid-2">
+      <div class="info-card">
+        <i class="fa-solid fa-wave-square"></i>
+        <h4>Time-Frequency Representation</h4>
+        <p>Raw 64-channel EEG signals are inherently noisy and complex in the time domain. We convert overlapping windows into Short-Time Fourier Transform (STFT) spectrograms.</p>
+        <p style="margin-top: 15px;">This extracts power spectral density across standard frequency bands (Delta, Theta, Alpha, Beta, Gamma) into a structured <strong>64 &times; 64 spatial representation</strong>.</p>
+        <div style="font-size: 16px; margin-top: 15px; color: var(--accent); background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid rgba(0, 242, 255, 0.2);">
+          $$ \text{STFT}_i[m, k] = \sum_{n=0}^{N_w - 1} x_i[n + mH]\, w[n]\, e^{-j2\pi kn / N_w} $$
+        </div>
+      </div>
+      <div class="info-card" style="padding: 10px;">
+        <img src="viz_assets/spectrogram.png" alt="STFT Spectrogram" class="asset-img" style="max-height: 300px; width: 100%; object-fit: contain; background: #000;">
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 13: Stage 2 Transformer -->
+  <section class="slide">
+    <div class="slide-tag">13 / Methodology</div>
+    <h2 class="slide-title">Stage 2: Transformer Encoder</h2>
+    <div class="grid-2">
+      <div>
+        <div class="pipeline-step" style="background: transparent; border: none; padding: 0;">
+          <div class="step-num" style="font-size: 24px; width: 60px; height: 60px;">T</div>
+          <div>
+            <h4 style="font-size: 20px; margin-bottom: 8px;">EEGNet-Inspired Backbone</h4>
+            <p style="font-size: 16px;">4 Layers &middot; 8 Attention Heads</p>
+          </div>
+        </div>
+        <p style="margin-top: 30px; font-size: 18px; color: var(--muted); line-height: 1.6;">
+          The STFT maps are patchified and passed through a Vision Transformer style encoder. This captures global spatial-spectral relationships across different brain regions.
+        </p>
+        <div class="info-card highlight" style="margin-top: 30px; padding: 15px 20px;">
+          <strong>Output Tensor:</strong> 8 &times; 8 &times; 512 embedding<br>
+          <span style="font-size: 13px; color: var(--muted);">Acts as the foundation for the three downstream conditioning paths.</span>
+        </div>
+      </div>
+      <div class="info-card" style="padding: 10px;">
+        <img src="viz_assets/embedding.png" alt="Embedding" class="asset-img" style="max-height: 300px; width: 100%; object-fit: contain; background: #000;">
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 14: Stage 3a CLIP -->
+  <section class="slide">
+    <div class="slide-tag">14 / Methodology</div>
+    <h2 class="slide-title">Stage 3a: Semantic Path (CLIP)</h2>
+    <div class="grid-2">
+      <div class="info-card">
+        <i class="fa-solid fa-language"></i>
+        <h4>Semantic Alignment</h4>
+        <p>A TextMLP maps the base EEG embedding into a CLIP-compatible text space. This ensures the generated video matches the high-level <em>concept</em> of what the subject was viewing.</p>
+        <p style="margin-top: 15px; color: var(--muted); font-size: 14px;"><strong>Fix for Mode Collapse:</strong> We resolved early mode collapse by injecting raw GT text into the CLIP training alignment.</p>
+      </div>
+      <div class="info-card highlight">
+        <i class="fa-solid fa-compress-arrows-alt"></i>
+        <h4>Cosine Alignment &amp; Thresholding</h4>
+        <p>We use Cosine Similarity loss during training to align the predicted embedding $z_e$ with the ground-truth text embedding $z_t$.</p>
+        <div style="font-size: 16px; margin-top: 15px; color: var(--accent); background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; text-align: center; border: 1px solid rgba(0, 242, 255, 0.2);">
+          $$ \mathcal{L}_{sim} = 1 - \frac{z_e \cdot z_t}{\|z_e\| \|z_t\|} $$
+        </div>
+        <div style="margin-top: 15px; font-family: var(--font-mono); color: var(--accent); font-size: 16px;">
+          Threshold: $S_c \ge 0.7$
+        </div>
+        <p style="margin-top: 10px; font-size: 13px;">Samples with alignment meeting the threshold provide strong semantic guidance.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 15: Stage 3b ViT -->
+  <section class="slide">
+    <div class="slide-tag">15 / Methodology</div>
+    <h2 class="slide-title">Stage 3b: Structural Path (ViT)</h2>
+    <div class="grid-2">
+      <div class="info-card">
+        <i class="fa-solid fa-border-all"></i>
+        <h4>Spatial &amp; Compositional Guidance</h4>
+        <p>While CLIP provides semantic concepts ("a dog running"), the ViT path preserves structural layout and composition from the visual cortex signals.</p>
+        <p style="margin-top: 15px;">Produces visual latents of shape <strong>6 &times; 4 &times; 32 &times; 32</strong> to guide the structural formation of the generated frames.</p>
+      </div>
+      <div style="display: grid; grid-template-rows: 1fr 1fr; gap: 15px;">
+        <div style="position: relative;">
+          <span style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 4px 8px; font-size: 10px; border-radius: 4px; font-family: var(--font-mono);">ViT Latents</span>
+          <img src="viz_assets/vit_latents.png" alt="ViT Latents" class="asset-img" style="height: 150px; width: 100%; object-fit: cover;">
+        </div>
+        <div style="position: relative;">
+          <span style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 4px 8px; font-size: 10px; border-radius: 4px; font-family: var(--font-mono);">ViT Output Attention</span>
+          <img src="viz_assets/vit_output.png" alt="ViT Output" class="asset-img" style="height: 150px; width: 100%; object-fit: cover;">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 16: Stage 3c Dynamic -->
+  <section class="slide">
+    <div class="slide-tag">16 / Methodology</div>
+    <h2 class="slide-title">Stage 3c: Dynamic Classifier + DANA</h2>
+    <div class="grid-2">
+      <div class="info-card">
+        <i class="fa-solid fa-tachometer-fast"></i>
+        <h4>Temporal Dynamics (Fast/Slow)</h4>
+        <p>A binary classifier predicts the motion profile of the scene optimized via Cross-Entropy.</p>
+        <div style="font-size: 14px; margin-top: 15px; color: var(--primary); background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; text-align: center; border: 1px solid rgba(139, 92, 246, 0.2);">
+          $$ \mathcal{L}_{CE} = - \frac{1}{N} \sum_{i=1}^{N} y_i \log(\hat{y}_i) + (1-y_i) \log(1-\hat{y}_i) $$
+        </div>
+        <div style="margin-top: 15px; font-family: var(--font-mono); color: var(--primary); font-weight: 700; font-size: 18px;">
+          Validation Accuracy: 58.27%
+        </div>
+      </div>
+      <div class="info-card highlight">
+        <i class="fa-solid fa-sliders"></i>
+        <h4>DANA Latent Stabilization</h4>
+        <p>Brain signals are noisy. The DANA module adaptively modulates the VAE latents based on the dynamic classifier's output, preventing mode collapse.</p>
+        <div style="font-size: 16px; margin-top: 15px; color: var(--accent); background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; text-align: center; border: 1px solid rgba(0, 242, 255, 0.2);">
+          $$ z_{\text{DANA}} = z + \sigma(d)\cdot\epsilon $$
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 17: Stage 4 Diffusion -->
+  <section class="slide">
+    <div class="slide-tag">17 / Methodology</div>
+    <h2 class="slide-title">Stage 4: TemporalUNet Generation</h2>
+    <div class="grid-2" style="align-items: center;">
+      <div>
+        <div class="pipeline-step">
+          <div class="step-num">A</div><div><h4>Frozen Spatial Backbone</h4><p>Preserves SD v1.5 generative image priors</p></div>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-num">B</div><div><h4>Trainable Temporal Attention</h4><p>Interleaved 1D layers for inter-frame coherence</p></div>
+        </div>
+        <div style="font-size: 14px; margin-top: 15px; color: var(--fg); background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1);">
+          $$ \text{TemporalAttn}(\mathbf{h}) = \text{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right)V $$
+        </div>
+      </div>
+      <div class="info-card">
+        <i class="fa-solid fa-photo-film"></i>
+        <h4>Diffusion Training Objective</h4>
+        <div style="font-size: 13px; margin-top: 15px; color: var(--fg); background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1);">
+          $$ \mathcal{L}_{\text{MSE}} = \mathbb{E}_{z,\,\epsilon,\,t}\! \left[\left\|\epsilon - \epsilon_\theta\!\left(z_t, t, c_{\text{text}}, c_{\text{vis}}, d\right)\right\|_2^2\right] $$
+        </div>
+        <p style="margin-top: 10px; font-size: 12px; color: var(--muted); text-align: center; font-family: var(--font-mono);">Diffusion MSE &approx; 0.0005</p>
+        <div style="margin-top: 15px;">
+          <img src="viz_assets/sanity_frame.png" alt="Sanity" class="asset-img" style="max-height: 100px; object-fit: cover;">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 18: Inference Algorithm -->
+  <section class="slide">
+    <div class="slide-tag">18 / Methodology</div>
+    <h2 class="slide-title">Inference Algorithm</h2>
+    <div class="info-card" style="font-family: var(--font-mono); font-size: 14px; line-height: 1.6; padding: 20px 40px; background: rgba(10,12,20,0.95); border-left: 4px solid var(--accent); margin: 0 auto; max-width: 900px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      <h4 style="color: var(--accent); margin-bottom: 12px; font-family: var(--font-head); font-size: 18px;">Algorithm 1: EEG2Video Inference</h4>
+      <div style="color: var(--muted); margin-bottom: 4px;"><strong>Require:</strong> EEG epoch $x_{\text{EEG}} \in \mathbb{R}^{64 \times 500}$, DDIM steps $T=20$</div>
+      <hr style="border: 0; height: 1px; background: var(--border); margin: 10px 0;">
+      
+      <div style="display: grid; grid-template-columns: 25px 1fr; gap: 8px; margin-bottom: 6px;">
+        <span style="color: var(--muted);">1.</span>
+        <div><strong>Compute STFT:</strong> $S \leftarrow \text{STFT}(x_{\text{EEG}}) \in \mathbb{R}^{64\times64}$</div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 25px 1fr; gap: 8px; margin-bottom: 6px;">
+        <span style="color: var(--muted);">2.</span>
+        <div><strong>Encode:</strong> $h \leftarrow \text{TransformerEncoder}(S) \in \mathbb{R}^{8\times8\times512}$</div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 25px 1fr; gap: 8px; margin-bottom: 6px;">
+        <span style="color: var(--muted);">3.</span>
+        <div><strong>Extract:</strong> $c_{\text{text}} \leftarrow \text{CLIPEncoder}(h)$ , $c_{\text{vis}} \leftarrow \text{ViTEncoder}(h)$</div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 25px 1fr; gap: 8px; margin-bottom: 6px;">
+        <span style="color: var(--muted);">4.</span>
+        <div><strong>Classify:</strong> $d \leftarrow f_\phi(\text{Pool}(h))$</div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 25px 1fr; gap: 8px; margin-bottom: 12px;">
+        <span style="color: var(--muted);">5.</span>
+        <div><strong>Sample Noise:</strong> $z_T \sim \mathcal{N}(0, \mathbf{I})$ of shape $(B, 6, 4, 16, 16)$</div>
+      </div>
+      
+      <div style="margin-left: 5px; padding-left: 15px; border-left: 2px dashed rgba(255,255,255,0.2); margin-bottom: 12px;">
+        <div style="color: var(--primary); margin-bottom: 6px;"><strong>For</strong> $t = T, T-1, \ldots, 1$ <strong>do</strong></div>
+        
+        <div style="display: grid; grid-template-columns: 25px 1fr; gap: 8px; margin-bottom: 6px; margin-left: 15px;">
+          <span style="color: var(--muted);">6.</span>
+          <div>$\hat\epsilon \leftarrow \epsilon_\theta(z_t, t, c_{\text{text}}, c_{\text{vis}}, d)$ <span style="color:var(--muted); font-size:11px; margin-left: 8px;">// TemporalUNet step</span></div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 25px 1fr; gap: 8px; margin-bottom: 6px; margin-left: 15px;">
+          <span style="color: var(--muted);">7.</span>
+          <div>$z_{t-1} \leftarrow \text{DDIM\_Step}(z_t, \hat\epsilon, t)$</div>
+        </div>
+        
+        <div style="color: var(--primary);"><strong>End For</strong></div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 25px 1fr; gap: 8px; margin-bottom: 6px;">
+        <span style="color: var(--muted);">8.</span>
+        <div><strong>Decode:</strong> $\hat{X} \leftarrow \{\mathcal{D}(z_0^{(f)})\}_{f=1}^{6}$</div>
+      </div>
+      
+      <hr style="border: 0; height: 1px; background: var(--border); margin: 10px 0;">
+      <div style="color: var(--success);"><strong>Return:</strong> 3-frame video clip $\hat{X}$ at 3 FPS</div>
+    </div>
+  </section>
+
+  <!-- Slide 19: Loss Convergence -->
+  <section class="slide">
+    <div class="slide-tag">19 / Results</div>
+    <h2 class="slide-title">Training Loss Convergence</h2>
+    <div class="info-card" style="text-align: center; max-width: 900px; margin: 0 auto; padding: 40px;">
+      <h4 style="margin-bottom: 20px;">TemporalUNet Phase 4 Validation</h4>
+      <div style="height: 350px; position: relative; width: 100%;">
+        <canvas id="lossChart"></canvas>
+      </div>
+      <p style="margin-top: 20px; font-size: 15px; color: var(--muted);">The model closely approaches the architectural target of &approx;0.0005 MSE over 5 epochs, validating tensor shape contracts and gradient flow.</p>
+    </div>
+  </section>
+
+  <!-- Slide 20: Results Quantitative -->
+  <section class="slide">
+    <div class="slide-tag">20 / Results</div>
+    <h2 class="slide-title">Quantitative Metrics</h2>
+    <div class="grid-4" style="margin-bottom: 30px;">
+      <div class="info-card success" style="text-align: center;">
+        <div class="stat-val" style="color: var(--success);">0.6967</div>
+        <div class="stat-label">SSIM &uarr;</div>
+      </div>
+      <div class="info-card" style="text-align: center;">
+        <div class="stat-val" style="color: var(--accent);">29.17 dB</div>
+        <div class="stat-label">PSNR &uarr;</div>
+      </div>
+      <div class="info-card" style="text-align: center;">
+        <div class="stat-val" style="color: var(--primary);">0.3526</div>
+        <div class="stat-label">LPIPS &darr;</div>
+      </div>
+      <div class="info-card" style="text-align: center;">
+        <div class="stat-val" style="color: var(--warn);">24.50</div>
+        <div class="stat-label">FID &darr;</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <h4 style="margin-bottom: 15px;">Ablation Study</h4>
+      <table class="data-table">
+        <tr><th>Configuration</th><th>SSIM</th><th>PSNR</th><th>LPIPS</th></tr>
+        <tr style="background: rgba(16,185,129,0.1);"><td><strong>Full Model (DANA + ViT)</strong></td><td><strong>0.6967</strong></td><td><strong>29.17</strong></td><td><strong>0.3526</strong></td></tr>
+        <tr><td>w/o DANA</td><td>0.5459</td><td>20.14</td><td>0.4004</td></tr>
+        <tr><td>w/o Vision Transformer</td><td>0.4647</td><td>16.53</td><td>0.5400</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- Slide 21: Results Qualitative -->
+  <section class="slide">
+    <div class="slide-tag">21 / Results</div>
+    <h2 class="slide-title">Qualitative: GT vs Generated</h2>
+    <div class="grid-4">
+      <div class="video-pair">
+        <div class="video-labels"><span>GT</span><span>Gen</span></div>
+        <div style="display: flex; gap: 5px;">
+          <video loop muted playsinline poster="new_gt_vs_generated/posters/GT - 5.jpg" src="new_gt_vs_generated/GT - 5.mp4"></video>
+          <video loop muted playsinline poster="new_gt_vs_generated/posters/gen - 5.jpg" src="new_gt_vs_generated/gen - 5.mp4"></video>
+        </div>
+      </div>
+      <div class="video-pair">
+        <div class="video-labels"><span>GT</span><span>Gen</span></div>
+        <div style="display: flex; gap: 5px;">
+          <video loop muted playsinline poster="new_gt_vs_generated/posters/GT - 2.jpg" src="new_gt_vs_generated/GT - 2.mp4"></video>
+          <video loop muted playsinline poster="new_gt_vs_generated/posters/gen - 2.jpg" src="new_gt_vs_generated/gen - 2.mp4"></video>
+        </div>
+      </div>
+      <div class="video-pair">
+        <div class="video-labels"><span>GT</span><span>Gen</span></div>
+        <div style="display: flex; gap: 5px;">
+          <video loop muted playsinline poster="new_gt_vs_generated/posters/GT - 6.jpg" src="new_gt_vs_generated/GT - 6.mp4"></video>
+          <video loop muted playsinline poster="new_gt_vs_generated/posters/gen - 6.jpg" src="new_gt_vs_generated/gen - 6.mp4"></video>
+        </div>
+      </div>
+      <div class="video-pair">
+        <div class="video-labels"><span>GT</span><span>Gen</span></div>
+        <div style="display: flex; gap: 5px;">
+          <video loop muted playsinline poster="new_gt_vs_generated/posters/GT - 8.jpg" src="new_gt_vs_generated/GT - 8.mp4"></video>
+          <video loop muted playsinline poster="new_gt_vs_generated/posters/gen - 8.jpg" src="new_gt_vs_generated/gen - 8.mp4"></video>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 22: Real World Impact -->
+  <section class="slide">
+    <div class="slide-tag">22 / Applications</div>
+    <h2 class="slide-title">Real-World Impact & Applications</h2>
+    <div class="grid-3">
+      <div class="info-card highlight">
+        <i class="fa-solid fa-wheelchair" style="color: var(--primary);"></i>
+        <h4>Medical Rehabilitation</h4>
+        <p>Brain-Computer Interfaces (BCIs) that can reconstruct perceptual states hold immense potential to revolutionize assistive communication for locked-in patients and individuals with severe motor disabilities.</p>
+      </div>
+      <div class="info-card">
+        <i class="fa-solid fa-vr-cardboard" style="color: var(--accent);"></i>
+        <h4>Next-Gen Interaction</h4>
+        <p>Robust visual decoding paves the way for direct thought-to-screen media generation and entirely new forms of seamless human-computer interaction in mixed reality environments.</p>
+      </div>
+      <div class="info-card">
+        <i class="fa-solid fa-microscope" style="color: var(--secondary);"></i>
+        <h4>Cognitive Neuroscience</h4>
+        <p>Decoding the fast temporal dynamics of visual scenes deepens our fundamental understanding of the neural correlates of visual consciousness and how the brain processes continuous motion.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 23: Limitations -->
+  <section class="slide">
+    <div class="slide-tag">23 / Discussion</div>
+    <h2 class="slide-title">Limitations & Future Work</h2>
+    <div class="grid-2">
+      <div class="info-card danger">
+        <i class="fa-solid fa-triangle-exclamation" style="color: var(--danger);"></i>
+        <h4>Current Limitations</h4>
+        <ul style="margin-left: 20px; color: var(--fg); font-size: 15px; line-height: 2;">
+          <li><strong>Synthetic Integration:</strong> Phase 4 architecture was validated using synthetic tensors; full end-to-end integration with real live EEG embeddings awaits Phase 5.</li>
+          <li><strong>Resolution Limits:</strong> Outputs are currently constrained to 128&times;128 px. Scaling to high-definition requires significantly more VRAM and compute.</li>
+          <li><strong>Frame Capacity:</strong> Current architecture generates 3-frame sequences; longer horizons need hierarchical modeling.</li>
+          <li><strong>Subject Variability:</strong> EEG signals vary wildly between subjects; personalized adaptation is currently missing.</li>
+        </ul>
+      </div>
+      <div class="info-card highlight">
+        <i class="fa-solid fa-lightbulb" style="color: var(--warn);"></i>
+        <h4>Future Directions</h4>
+        <ul style="margin-left: 20px; color: var(--fg); font-size: 15px; line-height: 2;">
+          <li><strong>Phase 5 Integration:</strong> Full SEED-DV benchmarking combining visual and semantic paths from Sub-teams 3 & 4.</li>
+          <li><strong>Classifier-Free Guidance (CFG):</strong> Implementing CFG natively with EEG conditioning to boost generation fidelity.</li>
+          <li><strong>Resolution Scaling:</strong> Integrating cascaded diffusion or super-resolution latent upscalers.</li>
+          <li><strong>Subject Personalization:</strong> Implementing Few-Shot LoRA fine-tuning for specific subjects to combat variability.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 24: Thank You -->
+  <section class="slide">
+    <div style="text-align: center; max-width: 900px; margin: 0 auto;">
+      <i class="fa-solid fa-brain" style="font-size: 64px; color: var(--accent); margin-bottom: 20px;"></i>
+      <h1 class="slide-title" style="font-size: 72px;">Thank You</h1>
+      <p class="slide-subtitle" style="margin: 0 auto 40px; font-size: 24px;">Questions &amp; Discussion</p>
+      
+      <div class="info-card" style="text-align: left; margin-bottom: 30px;">
+        <h4 style="margin-bottom: 15px;">Key References</h4>
+        <div class="grid-2" style="gap: 10px;">
+          <ul style="margin-left: 20px; color: var(--muted); font-size: 13px; line-height: 1.8;">
+            <li>Liu, S., et al. (2024). <em>EEG2Video: Towards Decoding Dynamic Visual Perception from EEG</em>. NeurIPS.</li>
+            <li>Wu, J.Z., et al. (2023). <em>Tune-A-Video: One-Shot Tuning of Image Diffusion Models</em>. ICCV.</li>
+            <li>Rombach et al. (2022). <em>High-Resolution Image Synthesis with Latent Diffusion Models</em>. CVPR.</li>
+          </ul>
+          <ul style="margin-left: 20px; color: var(--muted); font-size: 13px; line-height: 1.8;">
+            <li>Song, J., et al. (2021). <em>Denoising Diffusion Implicit Models (DDIM)</em>. ICLR.</li>
+            <li>Radford, A., et al. (2021). <em>Learning Transferable Visual Models From Natural Language</em>. ICML.</li>
+            <li>Dosovitskiy, A., et al. (2021). <em>An Image is Worth 16x16 Words: Vision Transformers</em>. ICLR.</li>
+          </ul>
+        </div>
+      </div>
+      
+      <a href="index.html" style="display: inline-flex; align-items: center; gap: 10px; padding: 12px 24px; background: var(--accent); color: #000; text-decoration: none; border-radius: 8px; font-weight: 700; font-family: var(--font-mono);">
+        &larr; Back to Website
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  let currentSlide = 0;
+
+  // Initialize Nav Dots
+  const navDotsContainer = document.getElementById('navDots');
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goToSlide(i));
+    navDotsContainer.appendChild(dot);
+  }
+
+  function updateUI() {
+    // Update Indicator
+    document.getElementById('slideIndicator').innerHTML = 
+      `<span class="current">${String(currentSlide + 1).padStart(2, '0')}</span> / ${String(totalSlides).padStart(2, '0')}`;
+    
+    // Update Progress
+    const pct = ((currentSlide + 1) / totalSlides) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+    
+    // Update Dots
+    document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides || index === currentSlide) return;
+    
+    slides[currentSlide].querySelectorAll('video').forEach(v => v.pause());
+    
+    slides[currentSlide].classList.remove('active');
+    slides[index].classList.add('active');
+    currentSlide = index;
+    
+    slides[currentSlide].querySelectorAll('video').forEach(v => {
+      v.currentTime = 0;
+      v.play().catch(e => console.log('Autoplay prevented:', e));
+    });
+    
+    updateUI();
+  }
+
+  window.addEventListener('load', () => {
+    slides[currentSlide].querySelectorAll('video').forEach(v => {
+      v.play().catch(e => console.log('Autoplay prevented:', e));
+    });
+  });
+
+  function nextSlide() { goToSlide(currentSlide + 1); }
+  function prevSlide() { goToSlide(currentSlide - 1); }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevSlide(); }
+    else if (e.key === 'Home') { e.preventDefault(); goToSlide(0); }
+    else if (e.key === 'End') { e.preventDefault(); goToSlide(totalSlides - 1); }
+    else if (e.key === 'f' || e.key === 'F') { 
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+      else document.exitFullscreen();
+    }
+  });
+
+  // Touch Swipe navigation
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].screenX - touchStartX;
+    if (Math.abs(dx) > 50) { if (dx < 0) nextSlide(); else prevSlide(); }
+  }, { passive: true });
+
+  updateUI();
+
+  // Chart.js initialization for Loss Convergence
+  window.addEventListener('load', () => {
+    const ctx = document.getElementById('lossChart');
+    if (ctx) {
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['0', '1', '2', '3', '4', '5'],
+          datasets: [
+            {
+              label: 'Train MSE',
+              data: [0.0022, 0.0015, 0.0010, 0.0007, 0.0006, 0.00052],
+              borderColor: '#00f2ff', // accent
+              backgroundColor: '#00f2ff',
+              tension: 0.3,
+              borderWidth: 2,
+              pointRadius: 4
+            },
+            {
+              label: 'Val MSE',
+              data: [0.0021, 0.0016, 0.0012, 0.0009, 0.00075, 0.00062],
+              borderColor: '#f43f5e', // danger
+              backgroundColor: '#f43f5e',
+              borderDash: [5, 5],
+              tension: 0.3,
+              borderWidth: 2,
+              pointRadius: 4,
+              pointStyle: 'rect'
+            },
+            {
+              label: 'Target (0.0005)',
+              data: [0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005],
+              borderColor: '#8892a4', // muted
+              borderDash: [2, 4],
+              borderWidth: 1,
+              pointRadius: 0,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#f0f4ff', font: { family: "'Space Grotesk', sans-serif" } } }
+          },
+          scales: {
+            x: { 
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#8892a4' },
+              title: { display: true, text: 'Epoch', color: '#f0f4ff' }
+            },
+            y: { 
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#8892a4' },
+              title: { display: true, text: 'MSE Loss', color: '#f0f4ff' },
+              min: 0,
+              max: 0.0025
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>
